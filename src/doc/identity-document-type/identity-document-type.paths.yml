@@ -1,0 +1,9 @@
+paths:
+  /identity-document-type:
+    get:
+      summary: Listar tipos de documento de identidad
+      tags: [IdentityDocumentType]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Tipos disponibles., content: { application/json: { schema: { $ref: '#/components/schemas/IdentityDocumentTypeListResponse' } } } }
+        '400': { description: Solicitud invalida., content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }

@@ -1,0 +1,86 @@
+components:
+  schemas:
+    SaleItemRequest:
+      type: object
+      required: [product_id, qty]
+      properties:
+        product_id: { type: integer, example: 1 }
+        qty: { type: number, example: 2 }
+    SalePaymentRequest:
+      type: object
+      required: [payment_id, amount]
+      properties:
+        payment_id: { type: integer, example: 1 }
+        amount: { type: number, example: 37.8 }
+    SaleCustomerRequest:
+      type: object
+      properties:
+        customer_id: { type: integer, example: 1 }
+        customer_type: { type: string, enum: ['06', '01', '04', '07'], example: '06' }
+        customer_number: { type: string, example: '71234567' }
+        customer_name: { type: string, example: Maria Lopez }
+    SaleItemResponse:
+      type: object
+      properties:
+        product_id: { type: integer, example: 1 }
+        product_name: { type: string, example: Cafe molido }
+        qty: { type: number, example: 2 }
+        price: { type: number, example: 18.9 }
+        subtotal: { type: number, example: 37.8 }
+    SalePaymentResponse:
+      type: object
+      properties:
+        payment_id: { type: integer, example: 1 }
+        payment_name: { type: string, example: Efectivo }
+        amount: { type: number, example: 40 }
+    CreateSaleRequest:
+      type: object
+      required: [box_open_id, items, payment]
+      properties:
+        box_open_id: { type: integer, example: 1 }
+        items: { type: array, items: { $ref: '#/components/schemas/SaleItemRequest' } }
+        payment: { type: array, items: { $ref: '#/components/schemas/SalePaymentRequest' } }
+        customer: { $ref: '#/components/schemas/SaleCustomerRequest' }
+    CreateCreditNoteRequest:
+      type: object
+      required: [saleid, box_open_id, items, payment]
+      properties:
+        saleid: { type: integer, example: 10 }
+        box_open_id: { type: integer, example: 1 }
+        items: { type: array, items: { $ref: '#/components/schemas/SaleItemRequest' } }
+        payment: { type: array, items: { $ref: '#/components/schemas/SalePaymentRequest' } }
+        notes: { type: string, example: Devolucion parcial }
+    Sale:
+      type: object
+      properties:
+        id: { type: integer, example: 10 }
+        sale_date: { type: string, format: date-time, example: '2026-09-09T12:00:00.000Z' }
+        serie: { type: string, example: BV-000010 }
+        type: { type: string, example: BOLETA }
+        customer_name: { type: string, nullable: true, example: Maria Lopez }
+        customer_doc_code: { type: string, nullable: true, example: '06' }
+        customer_doc_number: { type: string, nullable: true, example: '71234567' }
+        igv_rate: { type: number, example: 18 }
+        taxable_amount: { type: number, example: 32.03 }
+        igv_total: { type: number, example: 5.77 }
+        total: { type: number, example: 37.8 }
+        paid_amount: { type: number, example: 40 }
+        change_amount: { type: number, example: 2.2 }
+        items: { type: array, items: { $ref: '#/components/schemas/SaleItemResponse' } }
+        payments: { type: array, items: { $ref: '#/components/schemas/SalePaymentResponse' } }
+        is_return: { type: boolean, example: false }
+        return_against_id: { type: integer, nullable: true, example: null }
+    SaleListResponse:
+      type: object
+      properties:
+        status: { type: boolean, example: true }
+        code: { type: integer, example: 200 }
+        message: { type: string, example: ok }
+        data: { type: object, properties: { total: { type: integer, example: 100 }, items: { type: array, items: { $ref: '#/components/schemas/Sale' } } } }
+    SaleResponse:
+      type: object
+      properties:
+        status: { type: boolean, example: true }
+        code: { type: integer, example: 200 }
+        message: { type: string, example: ok }
+        data: { $ref: '#/components/schemas/Sale' }

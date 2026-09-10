@@ -1,0 +1,57 @@
+paths:
+  /payment:
+    get:
+      summary: Listar medios de pago
+      tags: [Payment]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: query, name: page, required: true, schema: { type: integer, minimum: 1, example: 1 } }
+        - { in: query, name: lim, required: true, schema: { type: integer, minimum: 1, maximum: 10, example: 5 } }
+        - { in: query, name: search, schema: { type: string } }
+      responses:
+        '200': { description: Medios de pago paginados., content: { application/json: { schema: { $ref: '#/components/schemas/PaymentListResponse' } } } }
+  /payment/{id}:
+    get:
+      summary: Obtener medio de pago
+      tags: [Payment]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Medio de pago encontrado., content: { application/json: { schema: { $ref: '#/components/schemas/PaymentResponse' } } } }
+  /payment/create:
+    post:
+      summary: Crear medio de pago
+      tags: [Payment]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CreatePaymentRequest' } } }
+      responses:
+        '201': { description: Medio creado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+  /payment/update/{id}:
+    patch:
+      summary: Actualizar medio de pago
+      tags: [Payment]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/UpdatePaymentRequest' } } }
+      responses:
+        '200': { description: Medio actualizado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+  /payment/status/{id}:
+    patch:
+      summary: Cambiar estado de medio de pago
+      tags: [Payment]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Estado actualizado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+  /payment/delete/{id}:
+    delete:
+      summary: Eliminar medio de pago
+      tags: [Payment]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Medio eliminado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }

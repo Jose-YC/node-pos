@@ -1,0 +1,46 @@
+# Environment files and local secrets
+.env*
+!.env.example
+
+# Dependencies and build output
+node_modules/
+dist/
+coverage/
+.nyc_output/
+.pnpm-store/
+.cache/
+*.tsbuildinfo
+
+# Generated Prisma client
+src/generated/
+generated/
+
+# Local databases and admin state
+postgres/
+pgadmin/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs and debug output
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Operating-system files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.pid
+*.sqlite
+*.sqlite3
+*.db

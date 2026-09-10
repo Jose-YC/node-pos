@@ -1,0 +1,37 @@
+components:
+  schemas:
+    CreatePermissionRequest:
+      type: object
+      required: [name, module]
+      properties:
+        name: { type: string, pattern: '^[^:]+:[^:]+$', example: category:read }
+        module: { type: string, example: category }
+    UpdatePermissionRequest:
+      type: object
+      properties:
+        name: { type: string, pattern: '^[^:]+:[^:]+$', example: category:write }
+        module: { type: string, example: category }
+    Permission:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        name: { type: string, pattern: '^[^:]+:[^:]+$', example: category:read }
+        module: { type: string, example: category }
+    PermissionListResponse:
+      type: object
+      properties:
+        status: { type: boolean, example: true }
+        code: { type: integer, example: 200 }
+        message: { type: string, example: ok }
+        data:
+          type: object
+          properties:
+            total: { type: integer, example: 40 }
+            items: { type: array, items: { $ref: '#/components/schemas/Permission' } }
+    PermissionResponse:
+      type: object
+      properties:
+        status: { type: boolean, example: true }
+        code: { type: integer, example: 200 }
+        message: { type: string, example: ok }
+        data: { $ref: '#/components/schemas/Permission' }

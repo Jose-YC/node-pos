@@ -1,0 +1,84 @@
+paths:
+  /user:
+    get:
+      summary: Listar usuarios
+      tags: [User]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: query, name: page, required: true, schema: { type: integer, minimum: 1, example: 1 } }
+        - { in: query, name: lim, required: true, schema: { type: integer, minimum: 1, maximum: 10, example: 5 } }
+        - { in: query, name: search, schema: { type: string } }
+        - { in: query, name: rol, schema: { type: integer } }
+      responses:
+        '200': { description: Usuarios paginados., content: { application/json: { schema: { $ref: '#/components/schemas/UserListResponse' } } } }
+        '400': { description: Solicitud invalida., content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
+  /user/{id}:
+    get:
+      summary: Obtener usuario
+      tags: [User]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Usuario encontrado., content: { application/json: { schema: { $ref: '#/components/schemas/UserResponse' } } } }
+        '404': { description: Usuario no encontrado., content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
+  /user/create:
+    post:
+      summary: Crear usuario
+      tags: [User]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CreateUserRequest' } } }
+      responses:
+        '201': { description: Usuario creado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+        '400': { description: Datos invalidos., content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
+  /user/update/{id}:
+    patch:
+      summary: Actualizar usuario
+      tags: [User]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/UpdateUserRequest' } } }
+      responses:
+        '200': { description: Usuario actualizado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+        '400': { description: Datos invalidos., content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
+  /userdelete/{id}:
+    delete:
+      summary: Eliminar usuario
+      tags: [User]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Usuario eliminado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+  /user/profile:
+    patch:
+      summary: Actualizar perfil
+      tags: [User]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/UpdateProfileRequest' } } }
+      responses:
+        '200': { description: Perfil actualizado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+  /user/password:
+    patch:
+      summary: Actualizar contrasena
+      tags: [User]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/UpdatePasswordRequest' } } }
+      responses:
+        '200': { description: Contrasena actualizada., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+  /user/image:
+    patch:
+      summary: Actualizar imagen de perfil
+      tags: [User]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/UpdateImageRequest' } } }
+      responses:
+        '200': { description: Imagen actualizada., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }

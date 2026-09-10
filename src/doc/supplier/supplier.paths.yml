@@ -1,0 +1,49 @@
+paths:
+  /supplier:
+    get:
+      summary: Listar proveedores
+      tags: [Supplier]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: query, name: page, required: true, schema: { type: integer, minimum: 1, example: 1 } }
+        - { in: query, name: lim, required: true, schema: { type: integer, minimum: 1, maximum: 10, example: 5 } }
+        - { in: query, name: search, schema: { type: string } }
+      responses:
+        '200': { description: Proveedores paginados., content: { application/json: { schema: { $ref: '#/components/schemas/SupplierListResponse' } } } }
+  /supplier/{id}:
+    get:
+      summary: Obtener proveedor
+      tags: [Supplier]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Proveedor encontrado., content: { application/json: { schema: { $ref: '#/components/schemas/SupplierResponse' } } } }
+  /supplier/create:
+    post:
+      summary: Crear proveedor
+      tags: [Supplier]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CreateSupplierRequest' } } }
+      responses:
+        '201': { description: Proveedor creado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+  /supplier/update/{id}:
+    put:
+      summary: Actualizar proveedor
+      tags: [Supplier]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/UpdateSupplierRequest' } } }
+      responses:
+        '200': { description: Proveedor actualizado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+  /supplier/delete/{id}:
+    delete:
+      summary: Eliminar proveedor
+      tags: [Supplier]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Proveedor eliminado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }

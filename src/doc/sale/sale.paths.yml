@@ -1,0 +1,99 @@
+paths:
+  /sale/admin:
+    get:
+      summary: Listar todas las ventas
+      tags: [Sale]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: query, name: page, required: true, schema: { type: integer, minimum: 1, example: 1 } }
+        - { in: query, name: lim, required: true, schema: { type: integer, minimum: 1, maximum: 10, example: 5 } }
+        - { in: query, name: search, schema: { type: string } }
+      responses:
+        '200': { description: Ventas paginadas., content: { application/json: { schema: { $ref: '#/components/schemas/SaleListResponse' } } } }
+  /sale:
+    get:
+      summary: Listar ventas del usuario autenticado
+      tags: [Sale]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: query, name: page, required: true, schema: { type: integer, minimum: 1, example: 1 } }
+        - { in: query, name: lim, required: true, schema: { type: integer, minimum: 1, maximum: 10, example: 5 } }
+        - { in: query, name: search, schema: { type: string } }
+      responses:
+        '200': { description: Ventas del usuario., content: { application/json: { schema: { $ref: '#/components/schemas/SaleListResponse' } } } }
+  /sale/{id}:
+    get:
+      summary: Obtener venta
+      tags: [Sale]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 10 } }]
+      responses:
+        '200': { description: Venta encontrada., content: { application/json: { schema: { $ref: '#/components/schemas/SaleResponse' } } } }
+  /sale/create:
+    post:
+      summary: Registrar venta
+      tags: [Sale]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSaleRequest'
+            examples:
+              boleta:
+                summary: Crear una boleta con cliente registrado
+                value:
+                  box_open_id: 1
+                  customer:
+                    customer_id: 1
+                  items:
+                    - product_id: 3
+                      qty: 4
+                  payment:
+                    - payment_id: 1
+                      amount: 300.00
+                    - payment_id: 2
+                      amount: 400.00
+              boletaGenerica:
+                summary: Crear una boleta generica
+                value:
+                  box_open_id: 1
+                  items:
+                    - product_id: 4
+                      qty: 1
+                  payment:
+                    - payment_id: 1
+                      amount: 300.00
+                    - payment_id: 2
+                      amount: 200.00
+              factura:
+                summary: Crear una factura
+                value:
+                  box_open_id: 1
+                  customer:
+                    customer_type: '06'
+                    customer_number: '20000000001'
+                    customer_name: Comercial Demo S.A.C.
+                  items:
+                    - product_id: 1
+                      qty: 1
+                    - product_id: 2
+                      qty: 1
+                  payment:
+                    - payment_id: 1
+                      amount: 500.00
+                    - payment_id: 2
+                      amount: 100.00
+      responses:
+        '201': { description: Venta creada., content: { application/json: { schema: { $ref: '#/components/schemas/SaleResponse' } } } }
+  /sale/credit-note:
+    post:
+      summary: Registrar nota de credito
+      tags: [Sale]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CreateCreditNoteRequest' } } }
+      responses:
+        '201': { description: Nota de credito creada., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }

@@ -1,0 +1,47 @@
+components:
+  schemas:
+    CreateCustomerRequest:
+      type: object
+      required: [name, doc_code, doc_number]
+      properties:
+        name: { type: string, example: Maria Lopez }
+        doc_code: { type: string, enum: ['06', '01', '04', '07'], example: '06' }
+        doc_number: { type: string, example: '71234567' }
+        email: { type: string, format: email, example: maria@example.com }
+        phone: { type: string, example: '+51987654321' }
+    UpdateCustomerRequest:
+      type: object
+      properties:
+        name: { type: string, example: Maria Lopez Garcia }
+        doc_code: { type: string, enum: ['06', '01', '04', '07'], example: '06' }
+        doc_number: { type: string, example: '71234567' }
+        email: { type: string, format: email, example: maria@example.com }
+        phone: { type: string, example: '+51987654321' }
+    Customer:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        name: { type: string, example: Maria Lopez }
+        doc_type: { type: string, example: Documento Nacional de Identidad }
+        doc_code: { type: string, enum: ['06', '01', '04', '07'], example: '06' }
+        doc_number: { type: string, example: '71234567' }
+        email: { type: string, format: email, nullable: true, example: maria@example.com }
+        phone: { type: string, nullable: true, example: '+51987654321' }
+    CustomerListResponse:
+      type: object
+      properties:
+        status: { type: boolean, example: true }
+        code: { type: integer, example: 200 }
+        message: { type: string, example: ok }
+        data:
+          type: object
+          properties:
+            total: { type: integer, example: 10 }
+            items: { type: array, items: { $ref: '#/components/schemas/Customer' } }
+    CustomerResponse:
+      type: object
+      properties:
+        status: { type: boolean, example: true }
+        code: { type: integer, example: 200 }
+        message: { type: string, example: ok }
+        data: { $ref: '#/components/schemas/Customer' }

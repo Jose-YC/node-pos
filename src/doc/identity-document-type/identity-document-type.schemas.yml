@@ -1,0 +1,14 @@
+components:
+  schemas:
+    IdentityDocumentType:
+      type: object
+      properties:
+        id: { type: string, example: '06' }
+        name: { type: string, example: Documento Nacional de Identidad }
+    IdentityDocumentTypeListResponse:
+      type: object
+      properties:
+        status: { type: boolean, example: true }
+        code: { type: integer, example: 200 }
+        message: { type: string, example: ok }
+        data: { type: array, items: { $ref: '#/components/schemas/IdentityDocumentType' } }

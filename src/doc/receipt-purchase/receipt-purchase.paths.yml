@@ -1,0 +1,57 @@
+paths:
+  /receipt-purchase:
+    get:
+      summary: Listar recepciones de compra
+      tags: [ReceiptPurchase]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: query, name: page, required: true, schema: { type: integer, minimum: 1, example: 1 } }
+        - { in: query, name: lim, required: true, schema: { type: integer, minimum: 1, maximum: 10, example: 5 } }
+        - { in: query, name: search, schema: { type: string } }
+      responses:
+        '200': { description: Recepciones paginadas., content: { application/json: { schema: { $ref: '#/components/schemas/ReceiptPurchaseListResponse' } } } }
+  /receipt-purchase/{id}:
+    get:
+      summary: Obtener recepcion de compra
+      tags: [ReceiptPurchase]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Recepcion encontrada., content: { application/json: { schema: { $ref: '#/components/schemas/ReceiptPurchaseResponse' } } } }
+  /receipt-purchase/create:
+    post:
+      summary: Registrar recepcion de compra
+      tags: [ReceiptPurchase]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CreateReceiptPurchaseRequest' } } }
+      responses:
+        '201': { description: Recepcion creada., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+  /receipt-purchase/update/{id}:
+    patch:
+      summary: Actualizar recepcion de compra
+      tags: [ReceiptPurchase]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/UpdateReceiptPurchaseRequest' } } }
+      responses:
+        '200': { description: Recepcion actualizada., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+  /receipt-purchase/submit/{id}:
+    patch:
+      summary: Confirmar recepcion de compra
+      tags: [ReceiptPurchase]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Recepcion confirmada., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+  /receipt-purchase/delete/{id}:
+    delete:
+      summary: Eliminar recepcion de compra
+      tags: [ReceiptPurchase]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Recepcion eliminada., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }

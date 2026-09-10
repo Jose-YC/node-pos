@@ -1,0 +1,25 @@
+components:
+  schemas:
+    CreateImageRequest:
+      type: object
+      required: [name, type]
+      properties:
+        name: { type: string, example: product-photo.jpg }
+        type: { type: string, enum: [profile, product], example: product }
+    ImageUrl:
+      type: object
+      properties:
+        url: { type: string, format: uri, example: https://res.cloudinary.com/demo/image/upload/signed }
+        signature: { type: string, example: abc123signature }
+        api_key: { type: string, example: 123456789012345 }
+        cloud_name: { type: string, example: pos-unit }
+        timestamp: { type: integer, example: 1788940800 }
+        folder: { type: string, example: products }
+        public_id: { type: string, example: products/product-photo }
+    ImageResponse:
+      type: object
+      properties:
+        status: { type: boolean, example: true }
+        code: { type: integer, example: 201 }
+        message: { type: string, example: ok }
+        data: { $ref: '#/components/schemas/ImageUrl' }

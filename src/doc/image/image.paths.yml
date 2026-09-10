@@ -1,0 +1,19 @@
+paths:
+  /image:
+    post:
+      summary: Generar URL de carga de imagen
+      tags: [Image]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateImageRequest' }
+      responses:
+        '201':
+          description: URL firmada generada.
+          content: { application/json: { schema: { $ref: '#/components/schemas/ImageResponse' } } }
+        '400':
+          description: Solicitud invalida.
+          content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }

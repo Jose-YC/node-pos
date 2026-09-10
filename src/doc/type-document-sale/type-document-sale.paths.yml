@@ -1,0 +1,23 @@
+paths:
+  /type-document-sale:
+    get:
+      summary: Listar tipos de documento de venta
+      tags: [TypeDocumentSale]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Tipos disponibles., content: { application/json: { schema: { $ref: '#/components/schemas/TypeDocumentSaleListResponse' } } } }
+  /type-document-sale/status:
+    get:
+      summary: Listar estados de documentos de venta
+      tags: [TypeDocumentSale]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Estados disponibles., content: { application/json: { schema: { $ref: '#/components/schemas/TypeDocumentSaleStatusResponse' } } } }
+  /type-document-sale/update/{id}:
+    patch:
+      summary: Cambiar estado de documento de venta
+      tags: [TypeDocumentSale]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: string, example: '01' } }]
+      responses:
+        '200': { description: Estado actualizado., content: { application/json: { schema: { $ref: '#/components/schemas/TypeDocumentSaleStatusResponse' } } } }

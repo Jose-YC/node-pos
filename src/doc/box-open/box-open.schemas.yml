@@ -1,0 +1,57 @@
+components:
+  schemas:
+    CreateBoxOpenRequest:
+      type: object
+      description: Datos para abrir una caja.
+      required: [amount]
+      properties:
+        amount:
+          type: number
+          format: double
+          example: 250.5
+        note:
+          type: string
+          example: Apertura de turno de la manana
+    BoxOpen:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        serie:
+          type: string
+          example: CAJ-000001
+        status:
+          type: string
+          example: OPEN
+        start:
+          type: string
+          format: date-time
+          example: '2026-09-09T08:00:00.000Z'
+        end:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+    BoxOpenListResponse:
+      type: object
+      properties:
+        status:
+          type: boolean
+          example: true
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: ok
+        data:
+          type: object
+          properties:
+            total:
+              type: integer
+              example: 12
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/BoxOpen'

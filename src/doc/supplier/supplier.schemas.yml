@@ -1,0 +1,45 @@
+components:
+  schemas:
+    CreateSupplierRequest:
+      type: object
+      required: [name, type, ruc]
+      properties:
+        name: { type: string, example: Distribuidora Central }
+        type: { type: string, enum: [natural, juridico], example: juridico }
+        ruc: { type: string, example: '20514680401' }
+        email: { type: string, format: email, example: ventas@central.com }
+        phone: { type: string, example: '+51987654321' }
+    UpdateSupplierRequest:
+      type: object
+      properties:
+        name: { type: string, example: Distribuidora Norte }
+        type: { type: string, enum: [natural, juridico], example: juridico }
+        email: { type: string, format: email, example: ventas@norte.com }
+        phone: { type: string, example: '+51987654321' }
+    Supplier:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        name: { type: string, example: Distribuidora Central }
+        type: { type: string, enum: [natural, juridico], example: juridico }
+        ruc: { type: string, example: '20514680401' }
+        email: { type: string, format: email, nullable: true, example: ventas@central.com }
+        phone: { type: string, nullable: true, example: '+51987654321' }
+    SupplierListResponse:
+      type: object
+      properties:
+        status: { type: boolean, example: true }
+        code: { type: integer, example: 200 }
+        message: { type: string, example: ok }
+        data:
+          type: object
+          properties:
+            total: { type: integer, example: 10 }
+            items: { type: array, items: { $ref: '#/components/schemas/Supplier' } }
+    SupplierResponse:
+      type: object
+      properties:
+        status: { type: boolean, example: true }
+        code: { type: integer, example: 200 }
+        message: { type: string, example: ok }
+        data: { $ref: '#/components/schemas/Supplier' }

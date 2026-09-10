@@ -1,0 +1,57 @@
+paths:
+  /stock-adjustment:
+    get:
+      summary: Listar ajustes de stock
+      tags: [StockAdjustment]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: query, name: page, required: true, schema: { type: integer, minimum: 1, example: 1 } }
+        - { in: query, name: lim, required: true, schema: { type: integer, minimum: 1, maximum: 10, example: 5 } }
+        - { in: query, name: search, schema: { type: string } }
+      responses:
+        '200': { description: Ajustes paginados., content: { application/json: { schema: { $ref: '#/components/schemas/StockAdjustmentListResponse' } } } }
+  /stock-adjustment/{id}:
+    get:
+      summary: Obtener ajuste de stock
+      tags: [StockAdjustment]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Ajuste encontrado., content: { application/json: { schema: { $ref: '#/components/schemas/StockAdjustmentResponse' } } } }
+  /stock-adjustment/create:
+    post:
+      summary: Crear ajuste de stock
+      tags: [StockAdjustment]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CreateStockAdjustmentRequest' } } }
+      responses:
+        '201': { description: Ajuste creado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+  /stock-adjustment/update/{id}:
+    patch:
+      summary: Actualizar ajuste de stock
+      tags: [StockAdjustment]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/UpdateStockAdjustmentRequest' } } }
+      responses:
+        '200': { description: Ajuste actualizado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+  /stock-adjustment/submit/{id}:
+    patch:
+      summary: Confirmar ajuste de stock
+      tags: [StockAdjustment]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Ajuste confirmado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+  /stock-adjustment/delete/{id}:
+    delete:
+      summary: Eliminar ajuste de stock
+      tags: [StockAdjustment]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Ajuste eliminado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }

@@ -1,0 +1,54 @@
+paths:
+  /permission:
+    get:
+      summary: Listar permisos
+      tags: [Permission]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: query, name: page, required: true, schema: { type: integer, minimum: 1, example: 1 } }
+        - { in: query, name: lim, required: true, schema: { type: integer, minimum: 1, maximum: 10, example: 5 } }
+        - { in: query, name: search, schema: { type: string } }
+      responses:
+        '200': { description: Permisos paginados., content: { application/json: { schema: { $ref: '#/components/schemas/PermissionListResponse' } } } }
+        '400': { description: Solicitud invalida., content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
+  /permission/{id}:
+    get:
+      summary: Obtener permiso
+      tags: [Permission]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Permiso encontrado., content: { application/json: { schema: { $ref: '#/components/schemas/PermissionResponse' } } } }
+        '404': { description: Permiso no encontrado., content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
+  /permission/create:
+    post:
+      summary: Crear permiso
+      tags: [Permission]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CreatePermissionRequest' } } }
+      responses:
+        '201': { description: Permiso creado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+        '400': { description: Datos invalidos., content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
+  /permission/update/{id}:
+    patch:
+      summary: Actualizar permiso
+      tags: [Permission]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/UpdatePermissionRequest' } } }
+      responses:
+        '200': { description: Permiso actualizado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+        '400': { description: Datos invalidos., content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
+  /permission/delete/{id}:
+    delete:
+      summary: Eliminar permiso
+      tags: [Permission]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Permiso eliminado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+        '400': { description: Solicitud invalida., content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }

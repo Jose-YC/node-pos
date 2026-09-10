@@ -1,0 +1,57 @@
+paths:
+  /box-open:
+    get:
+      summary: Listar cajas abiertas
+      tags: [BoxOpen]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          required: true
+          schema: { type: integer, minimum: 1, example: 1 }
+        - in: query
+          name: lim
+          required: true
+          schema: { type: integer, minimum: 1, maximum: 10, example: 5 }
+        - in: query
+          name: search
+          required: false
+          schema: { type: string }
+      responses:
+        '200':
+          description: Lista paginada de cajas abiertas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BoxOpenListResponse'
+        '400':
+          description: Solicitud invalida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Abrir caja
+      tags: [BoxOpen]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBoxOpenRequest'
+      responses:
+        '201':
+          description: Caja abierta correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Solicitud invalida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'

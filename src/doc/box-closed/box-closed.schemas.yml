@@ -1,0 +1,35 @@
+components:
+  schemas:
+    CreateBoxClosedRequest:
+      type: object
+      required: [box_open_id, amount_cash]
+      properties:
+        box_open_id: { type: integer, example: 1 }
+        amount_cash: { type: number, format: double, example: 1250.75 }
+        note: { type: string, example: Cierre de turno }
+    BoxClosedDetail:
+      type: object
+      properties:
+        mode_payment: { type: string, example: cash }
+        mode_payment_name: { type: string, example: Efectivo }
+        opening_amount: { type: number, example: 250.5 }
+        expected_amount: { type: number, example: 1200.5 }
+        closing_amount: { type: number, example: 1250.75 }
+        difference_amount: { type: number, example: 50.25 }
+    BoxClosed:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        serie: { type: string, example: CC-000001 }
+        status: { type: string, example: CLOSED }
+        start: { type: string, format: date-time, example: '2026-09-09T08:00:00.000Z' }
+        end: { type: string, format: date-time, example: '2026-09-09T18:00:00.000Z' }
+        payments: { type: array, items: { $ref: '#/components/schemas/BoxClosedDetail' } }
+        notes: { type: string, nullable: true, example: Cierre de turno }
+    BoxClosedResponse:
+      type: object
+      properties:
+        status: { type: boolean, example: true }
+        code: { type: integer, example: 200 }
+        message: { type: string, example: ok }
+        data: { $ref: '#/components/schemas/BoxClosed' }

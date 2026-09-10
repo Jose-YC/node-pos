@@ -1,0 +1,80 @@
+paths:
+  /product:
+    get:
+      summary: Listar productos
+      tags: [Product]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: query, name: page, required: true, schema: { type: integer, minimum: 1, example: 1 } }
+        - { in: query, name: lim, required: true, schema: { type: integer, minimum: 1, maximum: 10, example: 5 } }
+        - { in: query, name: search, schema: { type: string } }
+      responses:
+        '200': { description: Productos paginados., content: { application/json: { schema: { $ref: '#/components/schemas/ProductListResponse' } } } }
+  /product/catalog:
+    get:
+      summary: Listar catalogo de productos
+      tags: [Product]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: query, name: page, required: true, schema: { type: integer, minimum: 1, example: 1 } }
+        - { in: query, name: lim, required: true, schema: { type: integer, minimum: 1, maximum: 10, example: 5 } }
+        - { in: query, name: search, schema: { type: string } }
+        - { in: query, name: category, schema: { type: integer, minimum: 1 } }
+      responses:
+        '200': { description: Catalogo paginado., content: { application/json: { schema: { $ref: '#/components/schemas/CatalogProductListResponse' } } } }
+  /product/{id}:
+    get:
+      summary: Obtener producto
+      tags: [Product]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Producto encontrado., content: { application/json: { schema: { $ref: '#/components/schemas/ProductResponse' } } } }
+  /product/create:
+    post:
+      summary: Crear producto
+      tags: [Product]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CreateProductRequest' } } }
+      responses:
+        '201': { description: Producto creado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+  /product/update/{id}:
+    patch:
+      summary: Actualizar producto
+      tags: [Product]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/UpdateProductRequest' } } }
+      responses:
+        '200': { description: Producto actualizado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+  /product/image/{id}:
+    patch:
+      summary: Actualizar imagen de producto
+      tags: [Product]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/UpdateProductImageRequest' } } }
+      responses:
+        '200': { description: Imagen actualizada., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+  /product/status/{id}:
+    patch:
+      summary: Cambiar estado de producto
+      tags: [Product]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Estado actualizado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+  /product/delete/{id}:
+    delete:
+      summary: Eliminar producto
+      tags: [Product]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Producto eliminado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }

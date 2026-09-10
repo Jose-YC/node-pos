@@ -1,0 +1,547 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model user {
+  id         Int    @id @default(autoincrement())
+  name       String    @db.VarChar(30)
+  email      String    @unique @db.VarChar(255)
+  password   String    @db.VarChar(255)
+  image_url  String?
+
+  //TODO: status      Boolean // para desactivar usuarios
+  
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  roles      user_role[]
+  orderPurchases order_purchase[]
+  receiptPurchases receipt_purchase[]
+  boxOpens box_open[]
+  boxCloses box_closed[]
+  sales sale[]
+  stockAdjustments stock_adjustment[]
+}
+
+model permission {
+  id          Int    @id @default(autoincrement())
+  name        String    @unique @db.VarChar(100)
+  description String?
+  module      String    @db.VarChar(50)
+  
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  deleted_at  DateTime?
+
+  roles       role_permission[]
+}
+
+model role {
+  id          Int    @id @default(autoincrement())
+  name        String    @unique @db.VarChar(100)
+  description String?
+
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt  
+  deleted_at  DateTime?
+
+  users       user_role[]
+  permissions role_permission[]
+}
+
+model user_role {
+  id         Int    @id @default(autoincrement())
+  user_id    Int
+  role_id    Int
+
+  created_at DateTime  @default(now())
+  deleted_at DateTime?
+
+  user       user      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  role       role      @relation(fields: [role_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, role_id], name: "unique_user_role")
+}
+
+model role_permission {
+  id            Int    @id @default(autoincrement())
+  role_id       Int
+  permission_id Int
+
+  created_at    DateTime  @default(now())
+  deleted_at    DateTime?
+
+  role          role       @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  permission    permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
+
+  @@unique([role_id, permission_id], name: "unique_role_permission")
+}
+
+model category {
+  id            Int    @id @default(autoincrement())
+  name          String
+  description   String?
+
+  created_at    DateTime  @default(now())
+  deleted_at    DateTime?
+
+  products product[]
+}
+
+model identity_document_type {
+  id          String   @id @db.VarChar(2)     // '0', '1', '4', '6', '7', 'A'...
+  code        String   @unique @db.VarChar(2) // igual al id (código SUNAT)
+  name        String   @db.VarChar(100)       // "DOC. NACIONAL DE IDENTIDAD"
+  short_name  String?  @db.VarChar(30)        // "DNI"
+
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  deleted_at  DateTime?
+
+  customers customer[]
+}
+
+model supplier {
+  id            Int    @id @default(autoincrement())
+  name          String
+  type          String // natural | juridico
+  ruc           String
+  email         String?
+  phone         String?
+
+  created_at    DateTime  @default(now())
+  deleted_at    DateTime?
+
+  orderPurchases order_purchase[]
+  receiptPurchases receipt_purchase[]
+}
+
+model customer {
+  id                  Int    @id @default(autoincrement())
+  doc_type_code       String //01,02,03.....
+  doc_type_name       String // dni | ce | pas
+  doc_type_number     String @unique
+  name                String
+  is_generic          Boolean  @default(false)
+  email               String?
+  phone               String?
+  
+  identity_document_type identity_document_type @relation(fields: [doc_type_code], references: [id])
+  
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
+  deleted_at           DateTime?
+
+  sales sale[]
+}
+
+model payment {
+  id            Int     @id @default(autoincrement())
+  name          String  
+  type          String  @unique // 'cash' | 'card' | 'yape' ...
+  status        Boolean @default(true)
+
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+
+  detailBoxes detail_box_open[]
+  detailBoxCloses detail_box_closed[]
+  salePayments sale_payment[]
+}
+
+model product {
+  id            Int     @id @default(autoincrement())
+  sku           String
+  name          String
+  description   String
+  image         String  
+  min_order_qty Int
+  min_stock     Int
+  status        Boolean
+  category_id   Int
+
+  category  category @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+
+  detailReceiptPurchases detail_receipt_purchase[]
+  detailsStockAdjustment detail_stock_adjustment[]
+  detailOrderPurchases detail_order_purchase[]
+  productPrices product_price[]
+  productStocks product_stock[]
+  detailSales detail_sale[]
+  kardexes kardex[]
+}
+
+model product_price {
+  id                  Int     @id @default(autoincrement())
+  product_id          Int
+  product_name        String
+  product_description String
+  buying              Boolean
+  selling             Boolean
+  amount              Decimal @db.Decimal(12, 2)
+
+  product  product @relation(fields: [product_id], references: [id], onDelete: Cascade) 
+
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+}
+
+model product_stock {
+  id              Int     @id @default(autoincrement())
+  product_id      Int
+  stock           Int
+  valuation_rate  Decimal @db.Decimal(12, 2)
+  stock_value     Decimal @db.Decimal(12, 2)
+
+  product  product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+}
+
+model order_purchase {
+  id                Int     @id @default(autoincrement())
+  serie             String
+  supplier_id       Int
+  supplier_name     String
+  supplier_ruc      String
+  status            String  // borrador | enviado | aprobado | parcial | recibido | cancelado
+  address_purchase  String
+  delivery_date     DateTime @db.Date  // fecha de entrega pactada
+  total             Decimal @db.Decimal(12, 2)
+  user_id           Int
+  
+  user  user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  supplier  supplier @relation(fields: [supplier_id], references: [id], onDelete: Cascade)
+
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+
+  detailOrderPurchases detail_order_purchase[]
+  receiptPurchases receipt_purchase[]
+}
+
+model detail_order_purchase { 
+  id                Int     @id @default(autoincrement())
+  purchase_id       Int
+  product_id        Int
+  product_name      String
+  qty_received      Int // Cantidad ya recibida del proveedor
+  qty               Int // Cantidad pedida al proveedor
+  price             Decimal @db.Decimal(12, 2)
+  subtotal          Decimal @db.Decimal(12, 2)
+
+  order_purchase  order_purchase @relation(fields: [purchase_id], references: [id], onDelete: Cascade)
+  product product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+
+  @@unique([product_id, purchase_id])
+  detailReceiptPurchases detail_receipt_purchase[]
+}
+
+model kardex {
+  id                  Int     @id @default(autoincrement())
+  kardex_date         DateTime @db.Date
+  product_id          Int
+  
+  type                String // IN | OUT
+  doc_id              Int // id del documento 
+  doc_type            String // tipo de documento (recepcion, venta, merma)
+  doc_serie           String  // serie del documento
+
+  actual_qty          Int // cantidad antes del movimiento
+  after_qty           Int // cantidad despues del movimiento
+
+  incoming_rate       Decimal @db.Decimal(12, 2) // precio de compra con el que entro
+  outgoing_rate       Decimal @db.Decimal(12, 2) // precio de venta con el que salio
+
+  valuation_rate      Decimal @db.Decimal(12, 2) // costo promedio del producto
+  stock_value         Decimal @db.Decimal(12, 2) // valor costo * stock
+
+  product product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+}
+
+model receipt_purchase {
+  id                Int     @id @default(autoincrement())
+  serie             String
+  purchase_id       Int   
+  status            String // borrador | confirmado | cancelado   
+  supplier_id       Int
+  supplier_name     String        
+  supplier_ruc      String        
+  date_receipt      DateTime @db.Date
+  note              String?
+  total             Decimal @db.Decimal(12, 2)
+  user_id           Int
+
+  user  user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  order_purchase  order_purchase @relation(fields: [purchase_id], references: [id], onDelete: Cascade)
+  supplier  supplier @relation(fields: [supplier_id], references: [id], onDelete: Cascade)
+
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+
+  detailReceiptPurchases detail_receipt_purchase[]
+}
+
+model detail_receipt_purchase {
+  id                  Int     @id @default(autoincrement())
+  receipt_id          Int
+  detail_purchase_id  Int
+  product_id          Int
+  product_name        String
+  qty_received        Int // Cantidad que trae el proveedor
+  qty_reject          Int // Cantidad devuelta al proveedor
+  qty_accepted        Int // Cantidad aceptada al proveedor que entra al stock
+  price               Decimal @db.Decimal(12, 2)
+  subtotal            Decimal @db.Decimal(12, 2)
+
+  detail_order_purchase  detail_order_purchase @relation(fields: [detail_purchase_id], references: [id], onDelete: Cascade)
+  receipt_purchase  receipt_purchase @relation(fields: [receipt_id], references: [id], onDelete: Cascade)
+  product product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+}
+
+model box_open {
+  id                  Int     @id @default(autoincrement())
+  serie               String
+  user_id             Int
+  start_date          DateTime
+  end_date            DateTime?
+  status              String  // abierto | cerrado
+  notes               String?
+
+  user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+  deleted_at          DateTime?
+
+  detailBoxesOpen     detail_box_open[]
+  boxCloses           box_closed[]
+
+  sales sale[]
+
+  salePayments sale_payment[]
+}
+
+model detail_box_open {
+  id                  Int     @id @default(autoincrement())
+  box_open_id         Int
+  mode_payment        Int
+  opening_amount      Decimal @db.Decimal(12, 2)
+
+  box_open box_open @relation(fields: [box_open_id], references: [id], onDelete: Cascade)
+  payment payment @relation(fields: [mode_payment], references: [id], onDelete: Cascade)
+
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+}
+
+model box_closed {
+  id                  Int     @id @default(autoincrement())
+  serie               String
+  user_id             Int
+  box_open_id         Int
+  start_date          DateTime
+  end_date            DateTime
+  status              String 
+  notes               String?
+
+  user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  box_open box_open @relation(fields: [box_open_id], references: [id], onDelete: Cascade)
+
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+
+  detailBoxesClose detail_box_closed[]
+}
+
+model detail_box_closed {
+  id                  Int     @id @default(autoincrement())
+  box_closed_id       Int
+  mode_payment        Int
+  mode_payment_name   String
+  opening_amount      Decimal @db.Decimal(12, 2)
+  expected_amount     Decimal @db.Decimal(12, 2)
+  closing_amount      Decimal @db.Decimal(12, 2)
+  difference_amount   Decimal @db.Decimal(12, 2)
+
+  box_close box_closed @relation(fields: [box_closed_id], references: [id], onDelete: Cascade)
+  payment payment @relation(fields: [mode_payment], references: [id], onDelete: Cascade)
+
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+}
+
+model type_document_sale {
+  id                  String  @id @db.VarChar(2) 
+  code                String  @db.VarChar(2) 
+  name                String
+  status              Boolean
+  
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+  deleted_at          DateTime?
+
+  sales sale[]
+}
+
+model sale {
+  id                    Int     @id @default(autoincrement())
+  serie                 String  @db.VarChar(13)
+  box_open_id           Int
+  type_code             String @db.VarChar(2)
+  user_id               Int
+  sale_date             DateTime
+
+  customer_id           Int?
+  customer_name         String   @db.VarChar(200) // nombre o razon social
+  customer_doc_code     String   @db.VarChar(2) // codigo del documento 01, 06, etc
+  customer_doc_number   String   @db.VarChar(15) // numero del documento
+  
+  igv_rate              Decimal @db.Decimal(12, 2)
+  taxable_amount        Decimal @db.Decimal(12, 2)
+  igv_total             Decimal @db.Decimal(12, 2)
+  total                 Decimal @db.Decimal(12, 2)
+  paid_amount           Decimal @db.Decimal(12, 2)
+  change_amount         Decimal @db.Decimal(12, 2)
+
+  is_return             Boolean       @default(false)
+  return_against_id     Int?          // apunta a la venta original
+
+  user                  user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  type_document_sale    type_document_sale @relation(fields: [type_code], references: [id], onDelete: Cascade)
+  customer              customer? @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  box_open              box_open @relation(fields: [box_open_id], references: [id], onDelete: Cascade)
+  return_against        sale?  @relation("SaleReturns", fields: [return_against_id], references: [id])
+  returns               sale[] @relation("SaleReturns")
+
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+  deleted_at            DateTime?
+
+  detailSales           detail_sale[]
+  salePayments          sale_payment[]
+}
+
+model detail_sale {
+  id                  Int     @id @default(autoincrement())
+  sale_id             Int
+  product_id          Int
+  product_name        String
+  qty                 Int
+  price               Decimal @db.Decimal(12, 2)
+  subtotal            Decimal @db.Decimal(12, 2)
+
+  sale sale @relation(fields: [sale_id], references: [id], onDelete: Cascade)
+  product product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+}
+
+model sale_payment {
+  id                  Int     @id @default(autoincrement())
+  sale_id             Int
+  box_open_id           Int
+  payment_id          Int
+  payment_name        String
+  amount              Decimal @db.Decimal(12, 2)
+
+  sale sale @relation(fields: [sale_id], references: [id], onDelete: Cascade)
+  payment payment @relation(fields: [payment_id], references: [id], onDelete: Cascade)
+  box_open              box_open @relation(fields: [box_open_id], references: [id], onDelete: Cascade)
+
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+}
+
+model reason {
+  id                  Int     @id @default(autoincrement())
+  name                String
+  description         String?
+  status              String // In | Out
+
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+  deleted_at          DateTime?
+
+  stockAdjustment stock_adjustment[]
+}
+
+model stock_adjustment  {
+  id                      Int     @id @default(autoincrement())
+  serie                   String  @db.VarChar(20)
+  user_id                 Int
+  stock_adjustment_date   DateTime
+  reason_id               Int 
+  reason_name             String 
+  direction               String // In | Out
+  notes                   String?
+  status                  String  
+  total_qty               Int
+  total_value             Decimal @db.Decimal(12, 2)
+
+  reason                  reason @relation(fields: [reason_id], references: [id], onDelete: Cascade)
+  user                    user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  created_at              DateTime  @default(now())
+  updated_at              DateTime  @updatedAt
+  deleted_at              DateTime?
+
+  detailStockAdjustments detail_stock_adjustment[]
+}
+
+model detail_stock_adjustment {
+  id                  Int     @id @default(autoincrement())
+  stock_adjustment_id   Int
+  product_id          Int
+  product_name        String
+  qty                 Int
+  valuation_rate      Decimal @db.Decimal(12, 2)
+  subtotal            Decimal @db.Decimal(12, 2)
+
+  stock_adjustment    stock_adjustment @relation(fields: [stock_adjustment_id], references: [id], onDelete: Cascade)
+  product             product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+  deleted_at          DateTime?
+}

@@ -1,0 +1,54 @@
+paths:
+  /customer:
+    get:
+      summary: Listar clientes
+      tags: [Customer]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: query, name: page, required: true, schema: { type: integer, minimum: 1, example: 1 } }
+        - { in: query, name: lim, required: true, schema: { type: integer, minimum: 1, maximum: 10, example: 5 } }
+        - { in: query, name: search, schema: { type: string } }
+      responses:
+        '200': { description: Clientes paginados., content: { application/json: { schema: { $ref: '#/components/schemas/CustomerListResponse' } } } }
+        '400': { description: Solicitud invalida., content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
+  /customer/{id}:
+    get:
+      summary: Obtener cliente
+      tags: [Customer]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, minimum: 1, example: 1 } }]
+      responses:
+        '200': { description: Cliente encontrado., content: { application/json: { schema: { $ref: '#/components/schemas/CustomerResponse' } } } }
+        '404': { description: Cliente no encontrado., content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
+  /customer/create:
+    post:
+      summary: Crear cliente
+      tags: [Customer]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CreateCustomerRequest' } } }
+      responses:
+        '201': { description: Cliente creado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+        '400': { description: Datos invalidos., content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
+  /customer/update/{id}:
+    put:
+      summary: Actualizar cliente
+      tags: [Customer]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/UpdateCustomerRequest' } } }
+      responses:
+        '200': { description: Cliente actualizado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+        '400': { description: Datos invalidos., content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
+  /customer/delete/{id}:
+    delete:
+      summary: Eliminar cliente
+      tags: [Customer]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Cliente eliminado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+        '400': { description: Solicitud invalida., content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }

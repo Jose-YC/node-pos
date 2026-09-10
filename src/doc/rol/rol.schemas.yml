@@ -1,0 +1,41 @@
+components:
+  schemas:
+    CreateRoleRequest:
+      type: object
+      required: [name, description, permissions]
+      properties:
+        name: { type: string, example: Supervisor }
+        description: { type: string, example: Acceso operativo de supervisor }
+        permissions: { type: array, minItems: 2, uniqueItems: true, items: { type: integer }, example: [1, 2] }
+    UpdateRoleRequest:
+      type: object
+      properties:
+        name: { type: string, example: Cajero }
+        description: { type: string, example: Acceso de caja }
+        permissions: { type: array, minItems: 2, uniqueItems: true, items: { type: integer }, example: [1, 2] }
+    Role:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        name: { type: string, example: Supervisor }
+        description: { type: string, nullable: true, example: Acceso operativo }
+        count_permissions: { type: integer, example: 8 }
+        permissions: { type: array, items: { $ref: '#/components/schemas/Permission' } }
+    RoleListResponse:
+      type: object
+      properties:
+        status: { type: boolean, example: true }
+        code: { type: integer, example: 200 }
+        message: { type: string, example: ok }
+        data:
+          type: object
+          properties:
+            total: { type: integer, example: 5 }
+            items: { type: array, items: { $ref: '#/components/schemas/Role' } }
+    RoleResponse:
+      type: object
+      properties:
+        status: { type: boolean, example: true }
+        code: { type: integer, example: 200 }
+        message: { type: string, example: ok }
+        data: { $ref: '#/components/schemas/Role' }

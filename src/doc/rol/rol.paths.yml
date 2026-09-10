@@ -1,0 +1,54 @@
+paths:
+  /rol:
+    get:
+      summary: Listar roles
+      tags: [Rol]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: query, name: page, required: true, schema: { type: integer, minimum: 1, example: 1 } }
+        - { in: query, name: lim, required: true, schema: { type: integer, minimum: 1, maximum: 10, example: 5 } }
+        - { in: query, name: search, schema: { type: string } }
+      responses:
+        '200': { description: Roles paginados., content: { application/json: { schema: { $ref: '#/components/schemas/RoleListResponse' } } } }
+        '400': { description: Solicitud invalida., content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
+  /rol/{id}:
+    get:
+      summary: Obtener rol
+      tags: [Rol]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Rol encontrado., content: { application/json: { schema: { $ref: '#/components/schemas/RoleResponse' } } } }
+        '404': { description: Rol no encontrado., content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
+  /rol/create:
+    post:
+      summary: Crear rol
+      tags: [Rol]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CreateRoleRequest' } } }
+      responses:
+        '201': { description: Rol creado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+        '400': { description: Datos invalidos., content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
+  /rol/update/{id}:
+    patch:
+      summary: Actualizar rol
+      tags: [Rol]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/UpdateRoleRequest' } } }
+      responses:
+        '200': { description: Rol actualizado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+        '400': { description: Datos invalidos., content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
+  /rol/delete/{id}:
+    delete:
+      summary: Eliminar rol
+      tags: [Rol]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Rol eliminado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+        '400': { description: Solicitud invalida., content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }

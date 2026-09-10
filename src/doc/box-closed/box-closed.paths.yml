@@ -1,0 +1,21 @@
+paths:
+  /box-closed:
+    post:
+      summary: Cerrar caja
+      tags: [BoxClosed]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CreateBoxClosedRequest' } } }
+      responses:
+        '201': { description: Caja cerrada., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+        '400': { description: Datos invalidos., content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
+  /box-closed/{id}:
+    get:
+      summary: Obtener cierre de caja
+      tags: [BoxClosed]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Cierre encontrado., content: { application/json: { schema: { $ref: '#/components/schemas/BoxClosedResponse' } } } }
+        '404': { description: Cierre no encontrado., content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }

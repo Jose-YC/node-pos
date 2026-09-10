@@ -1,0 +1,86 @@
+paths:
+  /category:
+    get:
+      summary: Listar categorias
+      tags: [Category]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: page
+          required: true
+          schema: { type: integer, minimum: 1, example: 1 }
+        - in: query
+          name: lim
+          required: true
+          schema: { type: integer, minimum: 1, maximum: 10, example: 5 }
+        - in: query
+          name: search
+          schema: { type: string }
+      responses:
+        '200':
+          description: Categorias paginadas.
+          content: { application/json: { schema: { $ref: '#/components/schemas/CategoryListResponse' } } }
+        '400':
+          description: Solicitud invalida.
+          content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+  /category/{id}:
+    get:
+      summary: Obtener categoria
+      tags: [Category]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, minimum: 1, example: 1 }
+      responses:
+        '200':
+          description: Categoria encontrada.
+          content: { application/json: { schema: { $ref: '#/components/schemas/CategoryResponse' } } }
+        '404':
+          description: Categoria no encontrada.
+          content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+  /category/create:
+    post:
+      summary: Crear categoria
+      tags: [Category]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CreateCategoryRequest' } } }
+      responses:
+        '201':
+          description: Categoria creada.
+          content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } }
+        '400':
+          description: Datos invalidos.
+          content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+  /category/update/{id}:
+    put:
+      summary: Actualizar categoria
+      tags: [Category]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/UpdateCategoryRequest' } } }
+      responses:
+        '200':
+          description: Categoria actualizada.
+          content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } }
+        '400':
+          description: Datos invalidos.
+          content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+  /category/delete/{id}:
+    delete:
+      summary: Eliminar categoria
+      tags: [Category]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200':
+          description: Categoria eliminada.
+          content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } }
+        '400':
+          description: Solicitud invalida.
+          content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }

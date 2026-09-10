@@ -1,0 +1,72 @@
+components:
+  schemas:
+    CreateProductRequest:
+      type: object
+      required: [name, description, image, category_id, min_order_qty, min_stock_qty, status, price_buying, price_selling]
+      properties:
+        name: { type: string, example: Cafe molido }
+        description: { type: string, example: Cafe tostado de origen }
+        image: { type: string, example: product/cafe-molido.jpg }
+        category_id: { type: integer, example: 1 }
+        min_order_qty: { type: integer, example: 10 }
+        min_stock_qty: { type: integer, example: 5 }
+        status: { type: boolean, example: true }
+        price_buying: { type: number, minimum: 3, maximum: 999999.99, multipleOf: 0.01, example: 12.5 }
+        price_selling: { type: number, minimum: 3, maximum: 999999.99, multipleOf: 0.01, example: 18.9 }
+    UpdateProductRequest:
+      type: object
+      properties:
+        name: { type: string, example: Cafe premium }
+        description: { type: string, example: Cafe premium tostado }
+        category_id: { type: integer, example: 2 }
+        min_order_qty: { type: integer, example: 12 }
+        min_stock_qty: { type: integer, example: 6 }
+    UpdateProductImageRequest:
+      type: object
+      required: [image]
+      properties: { image: { type: string, example: product/new-cafe.jpg } }
+    Product:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        sku: { type: string, example: SKU-0001 }
+        name: { type: string, example: Cafe molido }
+        description: { type: string, example: Cafe tostado de origen }
+        image: { type: string, example: product/cafe-molido.jpg }
+        category_name: { type: string, example: Bebidas }
+        min_order_qty: { type: integer, example: 10 }
+        min_stock: { type: integer, example: 5 }
+        status: { type: boolean, example: true }
+        stock: { type: number, example: 80 }
+        price_buying: { type: number, example: 12.5 }
+        price_selling: { type: number, example: 18.9 }
+    CatalogProduct:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        name: { type: string, example: Cafe molido }
+        image: { type: string, example: product/cafe-molido.jpg }
+        category_name: { type: string, example: Bebidas }
+        stock: { type: number, example: 80 }
+        price: { type: number, example: 18.9 }
+    ProductListResponse:
+      type: object
+      properties:
+        status: { type: boolean, example: true }
+        code: { type: integer, example: 200 }
+        message: { type: string, example: ok }
+        data: { type: object, properties: { total: { type: integer, example: 30 }, items: { type: array, items: { $ref: '#/components/schemas/Product' } } } }
+    CatalogProductListResponse:
+      type: object
+      properties:
+        status: { type: boolean, example: true }
+        code: { type: integer, example: 200 }
+        message: { type: string, example: ok }
+        data: { type: object, properties: { total: { type: integer, example: 30 }, items: { type: array, items: { $ref: '#/components/schemas/CatalogProduct' } } } }
+    ProductResponse:
+      type: object
+      properties:
+        status: { type: boolean, example: true }
+        code: { type: integer, example: 200 }
+        message: { type: string, example: ok }
+        data: { $ref: '#/components/schemas/Product' }

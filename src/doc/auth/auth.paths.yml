@@ -1,0 +1,45 @@
+paths:
+  /auth/login:
+    post:
+      summary: Iniciar sesion
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '201':
+          description: Autenticacion exitosa.
+          content: { application/json: { schema: { $ref: '#/components/schemas/AuthResponse' } } }
+        '400':
+          description: Credenciales invalidas.
+          content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+  /auth/register:
+    post:
+      summary: Registrar usuario
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '201':
+          description: Usuario registrado.
+          content: { application/json: { schema: { $ref: '#/components/schemas/AuthResponse' } } }
+        '400':
+          description: Datos invalidos.
+          content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+  /auth/refresh:
+    get:
+      summary: Renovar token
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Token renovado.
+          content: { application/json: { schema: { $ref: '#/components/schemas/RefreshResponse' } } }

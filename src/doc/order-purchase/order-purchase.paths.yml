@@ -1,0 +1,73 @@
+paths:
+  /order-purchase:
+    get:
+      summary: Listar ordenes de compra
+      tags: [OrderPurchase]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: query, name: page, required: true, schema: { type: integer, minimum: 1, example: 1 } }
+        - { in: query, name: lim, required: true, schema: { type: integer, minimum: 1, maximum: 10, example: 5 } }
+        - { in: query, name: search, schema: { type: string } }
+      responses:
+        '200': { description: Ordenes paginadas., content: { application/json: { schema: { $ref: '#/components/schemas/OrderPurchaseListResponse' } } } }
+  /order-purchase/{id}:
+    get:
+      summary: Obtener orden de compra
+      tags: [OrderPurchase]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Orden encontrada., content: { application/json: { schema: { $ref: '#/components/schemas/OrderPurchaseResponse' } } } }
+  /order-purchase/create:
+    post:
+      summary: Crear orden de compra
+      tags: [OrderPurchase]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CreateOrderPurchaseRequest' } } }
+      responses:
+        '201': { description: Orden creada., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+  /order-purchase/update/{id}:
+    patch:
+      summary: Actualizar orden de compra
+      tags: [OrderPurchase]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/UpdateOrderPurchaseRequest' } } }
+      responses:
+        '200': { description: Orden actualizada., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+  /order-purchase/send/{id}:
+    patch:
+      summary: Enviar orden de compra
+      tags: [OrderPurchase]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Orden enviada., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+  /order-purchase/draft/{id}:
+    patch:
+      summary: Marcar orden como borrador
+      tags: [OrderPurchase]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Estado actualizado., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+  /order-purchase/submit/{id}:
+    patch:
+      summary: Confirmar orden de compra
+      tags: [OrderPurchase]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Orden confirmada., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+  /order-purchase/delete/{id}:
+    delete:
+      summary: Eliminar orden de compra
+      tags: [OrderPurchase]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer, example: 1 } }]
+      responses:
+        '200': { description: Orden eliminada., content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }

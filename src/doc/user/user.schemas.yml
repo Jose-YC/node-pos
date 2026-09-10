@@ -1,0 +1,55 @@
+components:
+  schemas:
+    CreateUserRequest:
+      type: object
+      required: [email, name, password, rol]
+      properties:
+        email: { type: string, format: email, example: new.user@example.com }
+        name: { type: string, example: Jane Doe }
+        password: { type: string, format: password, minLength: 6, pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).+$', example: User123! }
+        rol: { type: array, minItems: 1, uniqueItems: true, items: { type: integer }, example: [2] }
+    UpdateUserRequest:
+      type: object
+      properties:
+        email: { type: string, format: email, example: updated@example.com }
+        name: { type: string, example: Jane Smith }
+        password: { type: string, format: password, example: NewUser123! }
+        rol: { type: array, minItems: 1, uniqueItems: true, items: { type: integer }, example: [2] }
+    UpdateProfileRequest:
+      type: object
+      properties: { name: { type: string, example: Jane Smith } }
+    UpdatePasswordRequest:
+      type: object
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword: { type: string, format: password, example: OldUser123! }
+        newPassword: { type: string, format: password, example: NewUser123! }
+    UpdateImageRequest:
+      type: object
+      required: [image]
+      properties: { image: { type: string, example: users/jane-doe/avatar.jpg } }
+    User:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        name: { type: string, example: Jane Doe }
+        email: { type: string, format: email, example: admin@example.com }
+        rol: { type: array, items: { $ref: '#/components/schemas/Role' } }
+    UserListResponse:
+      type: object
+      properties:
+        status: { type: boolean, example: true }
+        code: { type: integer, example: 200 }
+        message: { type: string, example: ok }
+        data:
+          type: object
+          properties:
+            total: { type: integer, example: 30 }
+            items: { type: array, items: { $ref: '#/components/schemas/User' } }
+    UserResponse:
+      type: object
+      properties:
+        status: { type: boolean, example: true }
+        code: { type: integer, example: 200 }
+        message: { type: string, example: ok }
+        data: { $ref: '#/components/schemas/User' }
