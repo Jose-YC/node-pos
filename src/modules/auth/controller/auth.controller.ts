@@ -1,8 +1,8 @@
 import { Response, Request } from 'express'
 import { catchAsync, CustomError, errorHandler } from '../../../shared';
-import { LoginRequestDto, RegisterRequestDto } from '../dto';
+import { LoginRequestDto } from '../dto';
 import { extractJWT } from '../../../middlewares';
-import { LoginUseCase, RefreshUseCase, RegisterUseCase } from '../usecase';
+import { LoginUseCase, RefreshUseCase } from '../usecase';
 
 export class AuthController { 
 
@@ -10,14 +10,6 @@ export class AuthController {
         const login = LoginRequestDto.create(req.body);
 
         new LoginUseCase().execute(login)
-        .then((data) => res.status(201).json({ status:true, code: 201, message: 'ok', data }))
-        .catch((err) => errorHandler(err, res));
-    })
-
-    public register = catchAsync((req:Request, res:Response) =>  {
-        const register = RegisterRequestDto.create(req.body);
-
-        new RegisterUseCase().execute(register)
         .then((data) => res.status(201).json({ status:true, code: 201, message: 'ok', data }))
         .catch((err) => errorHandler(err, res));
     })

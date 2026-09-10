@@ -9,7 +9,6 @@ export class AuthRoutes {
         const rol= new AuthController();
 
         router.post('/login', rol.login);
-        router.post('/register', rol.register);
         router.get('/refresh', rol.refresh);
 
         return router;

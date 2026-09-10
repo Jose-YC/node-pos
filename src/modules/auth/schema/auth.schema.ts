@@ -18,11 +18,4 @@ export const LoginRequestSchema = z.object({
     password: stringField()
 });
 
-export const RegisterRequestSchema = z.object({
-    email: stringField().regex(REGEX_PATTERNS.EMAIL, "must be a valid email address"),
-    name: stringField(),
-    password: stringField().regex(REGEX_PATTERNS.PASSWORD_STRONG, "must be at least 6 characters long and include uppercase letters, lowercase letters, numbers, and special characters")
-});
-
 export type LoginRequestInput = z.infer<typeof LoginRequestSchema>;
-export type RegisterRequestInput = z.infer<typeof RegisterRequestSchema>;

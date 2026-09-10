@@ -1,7 +1,6 @@
-import { LoginRequestDto, AuthResponseDto, RegisterRequestDto } from '../dto';
+import { LoginRequestDto, AuthResponseDto } from '../dto';
 import { bcryptjsAdapter, jwtAdapter, CustomError } from '../../../shared';
 import { AuthResponseMapper } from '../mapper/auth.mapper';
-import { RegisterRaw } from '../interface/auth.interface';
 import { prisma } from '../../../config';
 
 export class AuthDatasource {
@@ -29,20 +28,6 @@ export class AuthDatasource {
         if (!token) throw CustomError.internalServer('Error creating token');
 
         return AuthResponseMapper.toDto(token, {id: user.id, name: user.name, email: user.email, image: user.image_url || undefined });
-    }
-    
-    async register(register:RegisterRequestDto): Promise<AuthResponseDto> {
-
-        const password = await bcryptjsAdapter.hash(register.password);
-
-        const [ user, ...rest] = await prisma.$queryRaw<RegisterRaw[]>`
-            SELECT * FROM fc_RegisterUser(${register.email}, ${register.name}, ${password})
-        `;
-        
-        const token = await jwtAdapter.generatetJWT<string>({id: user.id});
-        if (!token) { throw CustomError.internalServer('Error creating token')};
-
-        return AuthResponseMapper.toDto(token, {id: user.id, name: user.name, email: user.email});
     }
     
     async refresh(token: string): Promise<string> {
