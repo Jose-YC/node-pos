@@ -53,3 +53,20 @@ components:
         code: { type: integer, example: 200 }
         message: { type: string, example: ok }
         data: { $ref: '#/components/schemas/User' }
+    UserPermissions:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        email: { type: string, format: email, example: carlos.mendoza@tienda.com }
+        name: { type: string, example: Carlos Mendoza }
+        permissions:
+          type: array
+          items: { type: string }
+          example: [users:read, products:read, sale:create]
+    UserPermissionsResponse:
+      type: object
+      properties:
+        status: { type: boolean, example: true }
+        code: { type: integer, example: 200 }
+        message: { type: string, example: ok }
+        data: { $ref: '#/components/schemas/UserPermissions' }
