@@ -6,13 +6,6 @@ components:
       properties:
         email: { type: string, format: email, example: carlos.mendoza@tienda.com }
         password: { type: string, format: password, example: password123 }
-    RegisterRequest:
-      type: object
-      required: [email, name, password]
-      properties:
-        email: { type: string, format: email, example: new.user@example.com }
-        name: { type: string, example: Jane Doe }
-        password: { type: string, format: password, minLength: 6, pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).+$', example: User123! }
     AuthUser:
       type: object
       properties:
