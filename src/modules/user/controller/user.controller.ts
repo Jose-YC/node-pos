@@ -8,8 +8,9 @@ import {
   UpdateUserRequestDto,
   UserPaginateDto,
 } from "../dto";
-import { catchAsync, userContextManager,CustomError, errorHandler } from "../../../shared";
-import { CreateUserUsecase, ListUserUsecase, ByIdUserUsecase, UpdateUserUsecase, ProfileUserUsecase, UpdatePasswordUserUsecase, DeleteUserUsecase, ImageUserUsecase } from "../usecase";
+import { catchAsync, userContextManager,CustomError, errorHandler, jwtAdapter } from "../../../shared";
+import { CreateUserUsecase, ListUserUsecase, ByIdUserUsecase, UpdateUserUsecase, ProfileUserUsecase, UpdatePasswordUserUsecase, DeleteUserUsecase, ImageUserUsecase, UserPermissionUsecase } from "../usecase";
+import { extractJWT } from "../../../middlewares";
 
 export class UserController {
   
@@ -49,6 +50,20 @@ export class UserController {
     new UpdateUserUsecase()
       .execute(update)
       .then((status) => res.status(200).json({ status, code: 200, message: 'ok' }))
+      .catch((err) => errorHandler(err, res));
+  });
+
+  public permission = catchAsync((req: Request, res: Response) => {
+    const token = extractJWT(req);
+    if (!token) throw CustomError.unAuthorized("No token provided");
+
+      jwtAdapter.validatetJWT<{ id: number }>(token)
+      .then((payload) => {
+        if (!payload?.id) throw CustomError.unAuthorized("Unauthorized");
+
+        return new UserPermissionUsecase().execute(payload.id);
+      })
+      .then((data) => res.status(200).json({ status: true, code: 200, message: 'ok', data }))
       .catch((err) => errorHandler(err, res));
   });
 
