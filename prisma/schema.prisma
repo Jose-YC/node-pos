@@ -150,7 +150,7 @@ model customer {
 model payment {
   id            Int     @id @default(autoincrement())
   name          String  
-  type          String  @unique // 'cash' | 'card' | 'yape' ...
+  type          String  // 'cash' | 'card' | 'digital_wallet' ...
   status        Boolean @default(true)
 
   created_at    DateTime  @default(now())

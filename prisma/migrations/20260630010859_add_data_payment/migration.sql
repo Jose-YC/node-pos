@@ -3,5 +3,4 @@ VALUES
     ('Efectivo',            'cash', NOW()),
     ('Tarjeta de Crédito',  'card', NOW()),
     ('Yape',                'digital_wallet', NOW()),
-    ('Plin',                'digital_wallet', NOW())
-ON CONFLICT (type) DO NOTHING;
+    ('Plin',                'digital_wallet', NOW());

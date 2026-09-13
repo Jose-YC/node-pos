@@ -10,6 +10,3 @@ CREATE TABLE "payment" (
 
     CONSTRAINT "payment_pkey" PRIMARY KEY ("id")
 );
-
--- CreateIndex
-CREATE UNIQUE INDEX "payment_type_key" ON "payment"("type");
