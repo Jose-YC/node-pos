@@ -51,7 +51,7 @@ export class SaleDatasource {
   
   async get(paginate: SalePaginateDto): Promise<List<SaleListItemDto>> {
     const [count, users] = await Promise.all([
-      prisma.$queryRaw<{ fc_countlistorderpurchase: number }[]>`
+      prisma.$queryRaw<{ fc_countlistsale: number }[]>`
           SELECT * FROM fc_CountListSale(
           p_search := ${paginate.search}::TEXT,
           p_userid := ${paginate.userid}::INTEGER
@@ -66,7 +66,7 @@ export class SaleDatasource {
     ]);
 
     return { 
-      total: count[0].fc_countlistorderpurchase, 
+      total: count[0].fc_countlistsale, 
       items: SaleMapper.toListItemDtoArray(users)
     };
   }
