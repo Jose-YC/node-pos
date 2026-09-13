@@ -29,15 +29,15 @@ export class SaleController {
     })
 
     public getAll = catchAsync((req:Request, res:Response) =>  {
-        const {  page = 0, lim = 5, search } = req.query;
-        const paginate= SalePaginateDto.create( {page: +page, lim: +lim, search});
+        const {  page = 0, lim = 5, search, user } = req.query;
+        const paginate= SalePaginateDto.create( {page: +page, lim: +lim, search, userid: user ? +user : undefined } );
 
         new ListSaleUsecase().execute(paginate)
         .then((data) => res.status(200).json({ status:true, code: 200, message: 'ok', data }))
         .catch((err) => errorHandler(err, res));
     })
 
-    public getById = catchAsync((req:Request, res:Response) =>  {
+    public getAllById = catchAsync((req:Request, res:Response) =>  {
         const {  page = 0, lim = 5, search } = req.query;
         
         const userid  = userContextManager.getValue('id');

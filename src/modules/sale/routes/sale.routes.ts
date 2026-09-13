@@ -12,7 +12,7 @@ export class SaleRoutes {
         const authMiddleware = new AuthMiddleware();
 
         router.get('/admin', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['sale:read'])], sale.getAll);
-        router.get('/', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['sale:readid'])], sale.getById);
+        router.get('/', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['sale:readid'])], sale.getAllById);
         router.get('/:id', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['sale:byid'])], sale.getId);
         router.post('/create', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['sale:create'])], sale.post);
         router.post('/credit-note', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['credit-note:create'])], sale.postCreditNote);
