@@ -1,8 +1,10 @@
 -- =============================================================================
--- SCRIPT DE POBLADO REALISTA - TIENDA COMERCIAL (PERÚ)
--- Generado para simular historial real de los últimos ~10 meses
--- Compatible con schema.prisma + semillas existentes
--- Ejecutar con: prisma db execute --file seed_data.sql  o  psql -f seed_data.sql
+-- db-seed.sql  |  Seed 100% DETERMINISTA – Tienda de Cosméticos Perú
+-- 1 mes de operaciones | IGV 18% | Series SUNAT | Kardex | Cajas conciliadas
+-- =============================================================================
+-- PRE-REQUISITOS (ya deben existir por migraciones / seeds previos):
+--   identity_document_type, permission, payment, type_document_sale, reason,
+--   customer genérico (is_generic = true)
 -- =============================================================================
 
 BEGIN;
@@ -10,487 +12,766 @@ BEGIN;
 -- -----------------------------------------------------------------------------
 -- 1. ROLES
 -- -----------------------------------------------------------------------------
-INSERT INTO "role" ("id", "name", "description", "created_at", "updated_at")
+INSERT INTO "role" ("name", "description", "created_at", "updated_at")
 VALUES
-  (1, 'Administrador', 'Acceso total al sistema', '2025-10-01 08:00:00', '2025-10-01 08:00:00'),
-  (2, 'Cajero', 'Operaciones de caja, ventas y cobros', '2025-10-01 08:00:00', '2025-10-01 08:00:00'),
-  (3, 'Almacenero', 'Gestión de compras, recepciones y stock', '2025-10-01 08:00:00', '2025-10-01 08:00:00'),
-  (4, 'Supervisor', 'Lectura de reportes y aprobación de documentos', '2025-10-01 08:00:00', '2025-10-01 08:00:00')
-ON CONFLICT ("id") DO NOTHING;
+  ('Administrador', 'Acceso total al sistema', NOW(), NOW()),
+  ('Cajero', 'Operaciones de caja y ventas', NOW(), NOW()),
+  ('Supervisor', 'Supervisión y reportes', NOW(), NOW())
+ON CONFLICT ("name") DO NOTHING;
 
 -- -----------------------------------------------------------------------------
--- 2. USUARIOS (contraseñas hasheadas de ejemplo - bcrypt de "password123")
+-- 2. USUARIOS  (password = "password"  |  bcrypt hash)
 -- -----------------------------------------------------------------------------
-INSERT INTO "user" ("id", "name", "email", "password", "image_url", "created_at", "updated_at")
+INSERT INTO "user" ("name", "email", "password", "image_url", "created_at", "updated_at")
 VALUES
-  (1, 'Carlos Mendoza', 'carlos.mendoza@tienda.com', '$2b$10$rQZ8K8Y5Y5Y5Y5Y5Y5Y5Yu', NULL, '2025-10-05 09:15:00', '2025-10-05 09:15:00'),
-  (2, 'María López Vargas', 'maria.lopez@tienda.com', '$2b$10$rQZ8K8Y5Y5Y5Y5Y5Y5Y5Yu', NULL, '2025-10-08 10:30:00', '2025-10-08 10:30:00'),
-  (3, 'José Ramírez Quispe', 'jose.ramirez@tienda.com', '$2b$10$rQZ8K8Y5Y5Y5Y5Y5Y5Y5Yu', NULL, '2025-10-12 11:00:00', '2025-10-12 11:00:00'),
-  (4, 'Ana Torres Rojas', 'ana.torres@tienda.com', '$2b$10$rQZ8K8Y5Y5Y5Y5Y5Y5Y5Yu', NULL, '2025-11-03 08:45:00', '2025-11-03 08:45:00'),
-  (5, 'Luis Fernández Soto', 'luis.fernandez@tienda.com', '$2b$10$rQZ8K8Y5Y5Y5Y5Y5Y5Y5Yu', NULL, '2025-11-15 14:20:00', '2025-11-15 14:20:00')
-ON CONFLICT ("id") DO NOTHING;
+  ('Admin Principal', 'carlos.mendoza@tienda.com', '$2b$10$JY7lfTBBJsr3QIEuot1Wo.E2l/NUYlg7drTeWXAyak.94i9ZYE6RG', NULL, NOW(), NOW()),
+  ('Cajero Uno',      'caja1@tienda.com', '$2b$10$JY7lfTBBJsr3QIEuot1Wo.E2l/NUYlg7drTeWXAyak.94i9ZYE6RG', NULL, NOW(), NOW()),
+  ('Cajero Dos',      'caja2@tienda.com', '$2b$10$JY7lfTBBJsr3QIEuot1Wo.E2l/NUYlg7drTeWXAyak.94i9ZYE6RG', NULL, NOW(), NOW()),
+  ('Supervisor',      'supervisor@tienda.com', '$2b$10$JY7lfTBBJsr3QIEuot1Wo.E2l/NUYlg7drTeWXAyak.94i9ZYE6RG', NULL, NOW(), NOW())
+ON CONFLICT ("email") DO UPDATE SET
+  name = EXCLUDED.name,
+  password = EXCLUDED.password,
+  updated_at = NOW();
 
 -- -----------------------------------------------------------------------------
--- 3. USER_ROLE
+-- 3. ASIGNACIÓN DE ROLES A USUARIOS
 -- -----------------------------------------------------------------------------
-INSERT INTO "user_role" ("id", "user_id", "role_id", "created_at")
-VALUES
-  (1, 1, 1, '2025-10-05 09:20:00'),  -- Carlos = Administrador
-  (2, 2, 2, '2025-10-08 10:35:00'),  -- María = Cajero
-  (3, 3, 3, '2025-10-12 11:05:00'),  -- José = Almacenero
-  (4, 4, 2, '2025-11-03 08:50:00'),  -- Ana = Cajero
-  (5, 5, 4, '2025-11-15 14:25:00'),  -- Luis = Supervisor
-  (6, 1, 4, '2025-10-05 09:20:00')   -- Carlos también Supervisor
-ON CONFLICT ("id") DO NOTHING;
+INSERT INTO "user_role" ("user_id", "role_id", "created_at")
+SELECT u.id, r.id, NOW()
+FROM "user" u
+CROSS JOIN "role" r
+WHERE (u.email = 'carlos.mendoza@tienda.com' AND r.name = 'Administrador')
+   OR (u.email = 'caja1@tienda.com' AND r.name = 'Cajero')
+   OR (u.email = 'caja2@tienda.com' AND r.name = 'Cajero')
+   OR (u.email = 'supervisor@tienda.com' AND r.name = 'Supervisor')
+ON CONFLICT (user_id, role_id) DO NOTHING;
 
 -- -----------------------------------------------------------------------------
--- 4. ROLE_PERMISSION (muestra representativa – no se asignan todos por longitud)
+-- 4. PERMISOS → ROL Administrador (todos)
 -- -----------------------------------------------------------------------------
 INSERT INTO "role_permission" ("role_id", "permission_id", "created_at")
-SELECT 1, id, '2025-10-05 09:25:00' FROM "permission"  -- Admin tiene todos
+SELECT r.id, p.id, NOW()
+FROM "role" r
+CROSS JOIN "permission" p
+WHERE r.name = 'Administrador'
+ON CONFLICT (role_id, permission_id) DO NOTHING;
+
+-- -----------------------------------------------------------------------------
+-- 5. PERMISOS → ROL Cajero (incluye credit-note:create)
+-- -----------------------------------------------------------------------------
+INSERT INTO "role_permission" ("role_id", "permission_id", "created_at")
+SELECT r.id, p.id, NOW()
+FROM "role" r
+CROSS JOIN "permission" p
+WHERE r.name = 'Cajero'
+  AND p.name IN (
+    'sale:create', 'sale:byid', 'sale:readid', 'sale:read',
+    'credit-note:create',
+    'box-open:create', 'box-closed:create', 'box-closed:byid',
+    'customers:create', 'customers:read', 'customers:byid',
+    'products:read', 'products:read-catalog', 'products:byid',
+    'payments:read',
+    'type-document-sale:read', 'type-document-sale:read-status',
+    'identity-document-type:read'
+  )
+ON CONFLICT (role_id, permission_id) DO NOTHING;
+
+-- -----------------------------------------------------------------------------
+-- 6. CATEGORÍAS
+-- -----------------------------------------------------------------------------
+INSERT INTO "category" ("name", "description", "created_at")
+VALUES
+  ('Cuidado Facial', 'Cremas, serums, limpiadores y tratamientos faciales', NOW()),
+  ('Labiales y Maquillaje', 'Labiales, bases, sombras y correctores', NOW()),
+  ('Perfumería', 'Fragancias y colonias para dama y caballero', NOW()),
+  ('Cuidado Capilar', 'Shampoo, acondicionador, tratamientos y aceites', NOW()),
+  ('Cuidado Corporal', 'Cremas corporales, exfoliantes y aceites', NOW()),
+  ('Accesorios de Belleza', 'Brochas, esponjas, espejos y herramientas', NOW())
 ON CONFLICT DO NOTHING;
 
-INSERT INTO "role_permission" ("role_id", "permission_id", "created_at")
-SELECT 2, id, '2025-10-08 10:40:00' FROM "permission"
-WHERE name IN (
-  'sale:create', 'sale:byid', 'sale:readid', 'box-open:create',
-  'box-closed:create', 'customers:read', 'products:read-catalog',
-  'payments:read'
+-- -----------------------------------------------------------------------------
+-- 7. PRODUCTOS + PRECIOS + STOCK INICIAL
+-- -----------------------------------------------------------------------------
+WITH cats AS (
+  SELECT id, name FROM "category" WHERE deleted_at IS NULL
+),
+prod_data AS (
+  SELECT * FROM (VALUES
+    ('FAC-001', 'Serum Vitamina C 30ml', 'Serum antioxidante con vitamina C pura', 'Cuidado Facial', 8, 28.50, 59.90, 45),
+    ('FAC-002', 'Crema Hidratante Día 50ml', 'Hidratante facial con ácido hialurónico', 'Cuidado Facial', 10, 22.00, 49.90, 60),
+    ('FAC-003', 'Limpiador Facial Gel 150ml', 'Gel limpiador suave para todo tipo de piel', 'Cuidado Facial', 12, 15.50, 34.90, 55),
+    ('FAC-004', 'Mascarilla de Arcilla 100g', 'Mascarilla purificante de arcilla verde', 'Cuidado Facial', 6, 18.00, 39.90, 30),
+    ('FAC-005', 'Contorno de Ojos 15ml', 'Contorno de ojos anti-ojeras y bolsas', 'Cuidado Facial', 5, 25.00, 54.90, 25),
+    ('LAB-001', 'Labial Mate Rojo Intenso', 'Labial de larga duración tono rojo', 'Labiales y Maquillaje', 15, 12.00, 29.90, 80),
+    ('LAB-002', 'Labial Nude Satinado', 'Labial satinado tono nude', 'Labiales y Maquillaje', 15, 12.00, 29.90, 75),
+    ('LAB-003', 'Base Líquida SPF15 30ml', 'Base de cobertura media con protección solar', 'Labiales y Maquillaje', 8, 32.00, 69.90, 40),
+    ('LAB-004', 'Paleta Sombras 12 tonos', 'Paleta de sombras neutras y tierra', 'Labiales y Maquillaje', 6, 35.00, 79.90, 28),
+    ('LAB-005', 'Rímel Volumen Extra', 'Rímel para pestañas volumen y longitud', 'Labiales y Maquillaje', 12, 16.50, 36.90, 50),
+    ('PER-001', 'Eau de Parfum Floral 50ml', 'Fragancia floral fresca para dama', 'Perfumería', 5, 48.00, 119.90, 22),
+    ('PER-002', 'Colonia Cítrica Hombre 100ml', 'Colonia fresca cítrica para caballero', 'Perfumería', 5, 42.00, 99.90, 20),
+    ('PER-003', 'Body Mist Vainilla 200ml', 'Body mist suave aroma vainilla', 'Perfumería', 8, 18.00, 44.90, 35),
+    ('CAP-001', 'Shampoo Reparador 400ml', 'Shampoo para cabello dañado y teñido', 'Cuidado Capilar', 10, 14.00, 32.90, 48),
+    ('CAP-002', 'Acondicionador Keratina 400ml', 'Acondicionador con keratina hidrolizada', 'Cuidado Capilar', 10, 15.00, 34.90, 45),
+    ('CAP-003', 'Aceite Capilar Argán 50ml', 'Aceite de argán puro para puntas', 'Cuidado Capilar', 6, 22.00, 49.90, 30),
+    ('COR-001', 'Crema Corporal Coco 250ml', 'Crema hidratante corporal aroma coco', 'Cuidado Corporal', 10, 16.00, 37.90, 42),
+    ('COR-002', 'Exfoliante Corporal Azúcar 200g', 'Exfoliante natural de azúcar y manteca', 'Cuidado Corporal', 7, 19.00, 42.90, 28),
+    ('COR-003', 'Aceite Corporal Almendra 100ml', 'Aceite de almendras dulces hidratante', 'Cuidado Corporal', 6, 17.50, 39.90, 25),
+    ('ACC-001', 'Set Brochas Maquillaje 8 pzs', 'Set profesional de brochas sintéticas', 'Accesorios de Belleza', 5, 28.00, 64.90, 20),
+    ('ACC-002', 'Esponja Beauty Blender', 'Esponja de maquillaje hipoalergénica', 'Accesorios de Belleza', 12, 8.00, 19.90, 60),
+    ('ACC-003', 'Espejo LED Portátil', 'Espejo de aumento con luz LED', 'Accesorios de Belleza', 4, 35.00, 79.90, 15),
+    ('FAC-999', 'Serum Retinol Premium 30ml', 'Serum de retinol de alta concentración - edición limitada', 'Cuidado Facial', 3, 55.00, 149.90, 12),
+    ('PER-999', 'Perfume Niché Oud 50ml', 'Fragancia niché de oud oriental', 'Perfumería', 2, 95.00, 249.90, 8),
+    ('ACC-999', 'Kit Profesionales Makeup', 'Kit completo para maquilladores profesionales', 'Accesorios de Belleza', 2, 120.00, 299.90, 6)
+  ) AS t(sku, name, description, category_name, min_stock, cost, price, initial_stock)
 )
-ON CONFLICT DO NOTHING;
+INSERT INTO "product" (
+  "sku", "name", "description", "image", "min_order_qty", "min_stock",
+  "status", "category_id", "created_at", "updated_at"
+)
+SELECT
+  pd.sku, pd.name, pd.description,
+  'https://cdn.belleza.pe/products/' || lower(pd.sku) || '.jpg',
+  1, pd.min_stock, true, c.id, NOW(), NOW()
+FROM prod_data pd
+JOIN cats c ON c.name = pd.category_name
+WHERE NOT EXISTS (SELECT 1 FROM "product" p WHERE p.sku = pd.sku AND p.deleted_at IS NULL);
 
-INSERT INTO "role_permission" ("role_id", "permission_id", "created_at")
-SELECT 3, id, '2025-10-12 11:10:00' FROM "permission"
-WHERE name LIKE 'purchase:%' OR name LIKE 'receipt:%'
-   OR name LIKE 'stock-adjustment:%' OR name LIKE 'products:%'
-   OR name LIKE 'suppliers:%' OR name LIKE 'categories:%'
-ON CONFLICT DO NOTHING;
+-- Precios de VENTA
+INSERT INTO "product_price" (
+  "product_id", "product_name", "product_description",
+  "buying", "selling", "amount", "created_at", "updated_at"
+)
+SELECT p.id, p.name, p.description, false, true, pd.price, NOW(), NOW()
+FROM "product" p
+JOIN (VALUES
+  ('FAC-001', 59.90), ('FAC-002', 49.90), ('FAC-003', 34.90), ('FAC-004', 39.90), ('FAC-005', 54.90),
+  ('LAB-001', 29.90), ('LAB-002', 29.90), ('LAB-003', 69.90), ('LAB-004', 79.90), ('LAB-005', 36.90),
+  ('PER-001', 119.90), ('PER-002', 99.90), ('PER-003', 44.90),
+  ('CAP-001', 32.90), ('CAP-002', 34.90), ('CAP-003', 49.90),
+  ('COR-001', 37.90), ('COR-002', 42.90), ('COR-003', 39.90),
+  ('ACC-001', 64.90), ('ACC-002', 19.90), ('ACC-003', 79.90),
+  ('FAC-999', 149.90), ('PER-999', 249.90), ('ACC-999', 299.90)
+) AS pd(sku, price) ON p.sku = pd.sku
+WHERE NOT EXISTS (
+  SELECT 1 FROM "product_price" pp
+  WHERE pp.product_id = p.id AND pp.selling = true AND pp.deleted_at IS NULL
+);
 
--- -----------------------------------------------------------------------------
--- 5. CATEGORÍAS
--- -----------------------------------------------------------------------------
-INSERT INTO "category" ("id", "name", "description", "created_at")
-VALUES
-  (1, 'Bebidas', 'Gaseosas, jugos, aguas y bebidas energéticas', '2025-10-10 09:00:00'),
-  (2, 'Abarrotes', 'Arroz, fideos, aceite, azúcar, legumbres', '2025-10-10 09:00:00'),
-  (3, 'Lácteos y Huevos', 'Leche, yogurt, queso, mantequilla, huevos', '2025-10-10 09:00:00'),
-  (4, 'Snacks y Galletas', 'Papas fritas, galletas, chocolates, golosinas', '2025-10-10 09:00:00'),
-  (5, 'Cuidado Personal', 'Jabones, shampoo, pasta dental, papel higiénico', '2025-10-10 09:00:00'),
-  (6, 'Limpieza del Hogar', 'Detergentes, desinfectantes, cloro, esponjas', '2025-10-10 09:00:00')
-ON CONFLICT ("id") DO NOTHING;
+-- Precios de COMPRA (costo)
+INSERT INTO "product_price" (
+  "product_id", "product_name", "product_description",
+  "buying", "selling", "amount", "created_at", "updated_at"
+)
+SELECT p.id, p.name, p.description, true, false, pd.cost, NOW(), NOW()
+FROM "product" p
+JOIN (VALUES
+  ('FAC-001', 28.50), ('FAC-002', 22.00), ('FAC-003', 15.50), ('FAC-004', 18.00), ('FAC-005', 25.00),
+  ('LAB-001', 12.00), ('LAB-002', 12.00), ('LAB-003', 32.00), ('LAB-004', 35.00), ('LAB-005', 16.50),
+  ('PER-001', 48.00), ('PER-002', 42.00), ('PER-003', 18.00),
+  ('CAP-001', 14.00), ('CAP-002', 15.00), ('CAP-003', 22.00),
+  ('COR-001', 16.00), ('COR-002', 19.00), ('COR-003', 17.50),
+  ('ACC-001', 28.00), ('ACC-002', 8.00), ('ACC-003', 35.00),
+  ('FAC-999', 55.00), ('PER-999', 95.00), ('ACC-999', 120.00)
+) AS pd(sku, cost) ON p.sku = pd.sku
+WHERE NOT EXISTS (
+  SELECT 1 FROM "product_price" pp
+  WHERE pp.product_id = p.id AND pp.buying = true AND pp.deleted_at IS NULL
+);
 
--- -----------------------------------------------------------------------------
--- 6. PROVEEDORES
--- -----------------------------------------------------------------------------
-INSERT INTO "supplier" ("id", "name", "type", "ruc", "email", "phone", "created_at")
-VALUES
-  (1, 'Distribuidora Inca Kola S.A.C.', 'juridico', '20100047218', 'pedidos@incakola.com.pe', '01-613-2000', '2025-10-15 10:00:00'),
-  (2, 'Alicorp S.A.A.', 'juridico', '20100055237', 'ventas@alicorp.com.pe', '01-315-0800', '2025-10-15 10:15:00'),
-  (3, 'Gloria S.A.', 'juridico', '20100113610', 'distribucion@gloria.com.pe', '01-315-0500', '2025-10-16 09:30:00'),
-  (4, 'Procter & Gamble Perú S.R.L.', 'juridico', '20100039207', 'pedidos.pe@pg.com', '01-615-5000', '2025-10-18 11:00:00'),
-  (5, 'Distribuidora San Martín E.I.R.L.', 'juridico', '20512345678', 'contacto@sanmartin.pe', '01-456-7890', '2025-11-05 14:00:00')
-ON CONFLICT ("id") DO NOTHING;
-
--- -----------------------------------------------------------------------------
--- 7. CLIENTES ADICIONALES (además del genérico ya sembrado)
--- -----------------------------------------------------------------------------
-INSERT INTO "customer" ("id", "doc_type_code", "doc_type_name", "doc_type_number", "name", "is_generic", "email", "phone", "created_at", "updated_at")
-VALUES
-  (2, '01', 'DNI', '45678912', 'Roberto Carlos Gómez Huamán', false, 'roberto.gomez@gmail.com', '987654321', '2025-10-20 12:00:00', '2025-10-20 12:00:00'),
-  (3, '01', 'DNI', '71234567', 'Patricia Elena Vargas Mendoza', false, 'patricia.vargas@outlook.com', '912345678', '2025-10-22 15:30:00', '2025-10-22 15:30:00'),
-  (4, '06', 'RUC', '20567890123', 'Minimarket El Sol S.A.C.', false, 'compras@elsol.pe', '01-234-5678', '2025-11-01 10:00:00', '2025-11-01 10:00:00'),
-  (5, '01', 'DNI', '40321654', 'Juan Pablo Quispe Rojas', false, NULL, '945612378', '2025-11-10 16:45:00', '2025-11-10 16:45:00'),
-  (6, '01', 'DNI', '75891234', 'Sofía Isabel Chávez Torres', false, 'sofia.chavez@yahoo.com', '998877665', '2025-11-18 09:20:00', '2025-11-18 09:20:00'),
-  (7, '04', 'CE', '001234567', 'Miguel Ángel Fernández López', false, 'miguelf@email.com', '976543210', '2025-12-02 11:10:00', '2025-12-02 11:10:00'),
-  (8, '01', 'DNI', '46789123', 'Carmen Rosa Paredes Silva', false, NULL, '934567890', '2025-12-15 14:00:00', '2025-12-15 14:00:00'),
-  (9, '06', 'RUC', '20601234567', 'Restaurante La Casona E.I.R.L.', false, 'admin@lacasona.pe', '01-345-6789', '2026-01-08 10:30:00', '2026-01-08 10:30:00'),
-  (10, '01', 'DNI', '78901234', 'Diego Alejandro Soto Ramírez', false, 'diego.soto@gmail.com', '987123456', '2026-02-05 13:15:00', '2026-02-05 13:15:00')
-ON CONFLICT ("id") DO NOTHING;
-
--- -----------------------------------------------------------------------------
--- 8. PRODUCTOS
--- -----------------------------------------------------------------------------
-INSERT INTO "product" ("id", "sku", "name", "description", "image", "min_order_qty", "min_stock", "status", "category_id", "created_at", "updated_at")
-VALUES
-  -- Bebidas
-  (1, 'BEB-001', 'Inca Kola 2.25L', 'Gaseosa Inca Kola botella PET 2.25 litros', '/images/incakola-225.jpg', 6, 24, true, 1, '2025-10-12 10:00:00', '2025-10-12 10:00:00'),
-  (2, 'BEB-002', 'Coca Cola 2.25L', 'Gaseosa Coca Cola botella PET 2.25 litros', '/images/cocacola-225.jpg', 6, 24, true, 1, '2025-10-12 10:05:00', '2025-10-12 10:05:00'),
-  (3, 'BEB-003', 'Agua San Luis 625ml', 'Agua de mesa San Luis sin gas 625 ml', '/images/sanluis-625.jpg', 12, 48, true, 1, '2025-10-12 10:10:00', '2025-10-12 10:10:00'),
-  (4, 'BEB-004', 'Sporade 500ml', 'Bebida rehidratante Sporade sabor naranja 500 ml', '/images/sporade-500.jpg', 12, 36, true, 1, '2025-10-12 10:15:00', '2025-10-12 10:15:00'),
-  -- Abarrotes
-  (5, 'ABA-001', 'Arroz Costeño Extra 5kg', 'Arroz superior Costeño bolsa de 5 kilogramos', '/images/arroz-costeno-5kg.jpg', 4, 20, true, 2, '2025-10-12 10:20:00', '2025-10-12 10:20:00'),
-  (6, 'ABA-002', 'Aceite Primor 1L', 'Aceite vegetal Primor botella 1 litro', '/images/aceite-primor-1l.jpg', 12, 36, true, 2, '2025-10-12 10:25:00', '2025-10-12 10:25:00'),
-  (7, 'ABA-003', 'Azúcar Rubia Cartavio 1kg', 'Azúcar rubia Cartavio bolsa 1 kilogramo', '/images/azucar-cartavio.jpg', 12, 40, true, 2, '2025-10-12 10:30:00', '2025-10-12 10:30:00'),
-  (8, 'ABA-004', 'Fideos Don Vittorio Spaghetti 500g', 'Pasta spaghetti Don Vittorio 500 gramos', '/images/don-vittorio.jpg', 20, 60, true, 2, '2025-10-12 10:35:00', '2025-10-12 10:35:00'),
-  -- Lácteos
-  (9, 'LAC-001', 'Leche Gloria Entera 1L', 'Leche evaporada Gloria tetra pack 1 litro', '/images/gloria-1l.jpg', 12, 48, true, 3, '2025-10-12 10:40:00', '2025-10-12 10:40:00'),
-  (10, 'LAC-002', 'Yogurt Gloria Frutado 1kg', 'Yogurt Gloria sabor fresa 1 kilogramo', '/images/yogurt-gloria.jpg', 8, 24, true, 3, '2025-10-12 10:45:00', '2025-10-12 10:45:00'),
-  (11, 'LAC-003', 'Huevos Pardos x30', 'Huevos de gallina pardos bandeja de 30 unidades', '/images/huevos-30.jpg', 5, 15, true, 3, '2025-10-12 10:50:00', '2025-10-12 10:50:00'),
-  -- Snacks
-  (12, 'SNA-001', 'Lay''s Clásicas 150g', 'Papas fritas Lay''s sabor original 150 gramos', '/images/lays-150.jpg', 12, 36, true, 4, '2025-10-12 10:55:00', '2025-10-12 10:55:00'),
-  (13, 'SNA-002', 'Galletas Oreo 117g', 'Galletas Oreo rellenas de crema 117 gramos', '/images/oreo-117.jpg', 20, 48, true, 4, '2025-10-12 11:00:00', '2025-10-12 11:00:00'),
-  (14, 'SNA-003', 'Chocolate Sublime 30g', 'Chocolate Sublime con maní 30 gramos', '/images/sublime-30.jpg', 30, 90, true, 4, '2025-10-12 11:05:00', '2025-10-12 11:05:00'),
-  -- Cuidado Personal
-  (15, 'CUI-001', 'Jabón Protex 110g', 'Jabón antibacterial Protex barra 110 gramos', '/images/protex-110.jpg', 24, 72, true, 5, '2025-10-12 11:10:00', '2025-10-12 11:10:00'),
-  (16, 'CUI-002', 'Pasta Dental Colgate 90g', 'Pasta dental Colgate Triple Acción 90 gramos', '/images/colgate-90.jpg', 12, 36, true, 5, '2025-10-12 11:15:00', '2025-10-12 11:15:00'),
-  (17, 'CUI-003', 'Papel Higiénico Suave 4 rollos', 'Papel higiénico Suave doble hoja pack 4 rollos', '/images/suave-4.jpg', 10, 30, true, 5, '2025-10-12 11:20:00', '2025-10-12 11:20:00'),
-  -- Limpieza
-  (18, 'LIM-001', 'Detergente Ace 1kg', 'Detergente en polvo Ace Regular 1 kilogramo', '/images/ace-1kg.jpg', 8, 24, true, 6, '2025-10-12 11:25:00', '2025-10-12 11:25:00'),
-  (19, 'LIM-002', 'Cloro Sapolio 1L', 'Cloro desinfectante Sapolio botella 1 litro', '/images/sapolio-1l.jpg', 12, 36, true, 6, '2025-10-12 11:30:00', '2025-10-12 11:30:00'),
-  (20, 'LIM-003', 'Lavavajillas Ayudín 750ml', 'Lavavajillas líquido Ayudín limón 750 ml', '/images/ayudin-750.jpg', 12, 36, true, 6, '2025-10-12 11:35:00', '2025-10-12 11:35:00')
-ON CONFLICT ("id") DO NOTHING;
+-- Stock inicial
+INSERT INTO "product_stock" (
+  "product_id", "stock", "valuation_rate", "stock_value", "created_at", "updated_at"
+)
+SELECT p.id, pd.initial_stock, pd.cost, ROUND(pd.cost * pd.initial_stock, 2), NOW(), NOW()
+FROM "product" p
+JOIN (VALUES
+  ('FAC-001', 28.50, 45), ('FAC-002', 22.00, 60), ('FAC-003', 15.50, 55), ('FAC-004', 18.00, 30), ('FAC-005', 25.00, 25),
+  ('LAB-001', 12.00, 80), ('LAB-002', 12.00, 75), ('LAB-003', 32.00, 40), ('LAB-004', 35.00, 28), ('LAB-005', 16.50, 50),
+  ('PER-001', 48.00, 22), ('PER-002', 42.00, 20), ('PER-003', 18.00, 35),
+  ('CAP-001', 14.00, 48), ('CAP-002', 15.00, 45), ('CAP-003', 22.00, 30),
+  ('COR-001', 16.00, 42), ('COR-002', 19.00, 28), ('COR-003', 17.50, 25),
+  ('ACC-001', 28.00, 20), ('ACC-002', 8.00, 60), ('ACC-003', 35.00, 15),
+  ('FAC-999', 55.00, 12), ('PER-999', 95.00, 8), ('ACC-999', 120.00, 6)
+) AS pd(sku, cost, initial_stock) ON p.sku = pd.sku
+WHERE NOT EXISTS (
+  SELECT 1 FROM "product_stock" ps WHERE ps.product_id = p.id AND ps.deleted_at IS NULL
+);
 
 -- -----------------------------------------------------------------------------
--- 9. PRECIOS DE PRODUCTOS (compra y venta)
+-- 8. CLIENTES
 -- -----------------------------------------------------------------------------
-INSERT INTO "product_price" ("id", "product_id", "product_name", "product_description", "buying", "selling", "amount", "created_at", "updated_at")
+INSERT INTO "customer" (
+  "doc_type_code", "doc_type_name", "doc_type_number", "name",
+  "is_generic", "email", "phone", "created_at", "updated_at"
+)
 VALUES
-  -- Compra
-  (1, 1, 'Inca Kola 2.25L', 'Gaseosa Inca Kola botella PET 2.25 litros', true, false, 4.20, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (2, 2, 'Coca Cola 2.25L', 'Gaseosa Coca Cola botella PET 2.25 litros', true, false, 4.10, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (3, 3, 'Agua San Luis 625ml', 'Agua de mesa San Luis sin gas 625 ml', true, false, 0.85, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (4, 4, 'Sporade 500ml', 'Bebida rehidratante Sporade sabor naranja 500 ml', true, false, 1.80, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (5, 5, 'Arroz Costeño Extra 5kg', 'Arroz superior Costeño bolsa de 5 kilogramos', true, false, 18.50, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (6, 6, 'Aceite Primor 1L', 'Aceite vegetal Primor botella 1 litro', true, false, 7.80, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (7, 7, 'Azúcar Rubia Cartavio 1kg', 'Azúcar rubia Cartavio bolsa 1 kilogramo', true, false, 3.40, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (8, 8, 'Fideos Don Vittorio Spaghetti 500g', 'Pasta spaghetti Don Vittorio 500 gramos', true, false, 2.10, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (9, 9, 'Leche Gloria Entera 1L', 'Leche evaporada Gloria tetra pack 1 litro', true, false, 4.60, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (10, 10, 'Yogurt Gloria Frutado 1kg', 'Yogurt Gloria sabor fresa 1 kilogramo', true, false, 5.90, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (11, 11, 'Huevos Pardos x30', 'Huevos de gallina pardos bandeja de 30 unidades', true, false, 14.50, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (12, 12, 'Lay''s Clásicas 150g', 'Papas fritas Lay''s sabor original 150 gramos', true, false, 3.20, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (13, 13, 'Galletas Oreo 117g', 'Galletas Oreo rellenas de crema 117 gramos', true, false, 2.40, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (14, 14, 'Chocolate Sublime 30g', 'Chocolate Sublime con maní 30 gramos', true, false, 1.10, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (15, 15, 'Jabón Protex 110g', 'Jabón antibacterial Protex barra 110 gramos', true, false, 2.80, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (16, 16, 'Pasta Dental Colgate 90g', 'Pasta dental Colgate Triple Acción 90 gramos', true, false, 4.50, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (17, 17, 'Papel Higiénico Suave 4 rollos', 'Papel higiénico Suave doble hoja pack 4 rollos', true, false, 6.20, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (18, 18, 'Detergente Ace 1kg', 'Detergente en polvo Ace Regular 1 kilogramo', true, false, 8.90, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (19, 19, 'Cloro Sapolio 1L', 'Cloro desinfectante Sapolio botella 1 litro', true, false, 3.10, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (20, 20, 'Lavavajillas Ayudín 750ml', 'Lavavajillas líquido Ayudín limón 750 ml', true, false, 4.80, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  -- Venta
-  (21, 1, 'Inca Kola 2.25L', 'Gaseosa Inca Kola botella PET 2.25 litros', false, true, 5.50, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (22, 2, 'Coca Cola 2.25L', 'Gaseosa Coca Cola botella PET 2.25 litros', false, true, 5.50, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (23, 3, 'Agua San Luis 625ml', 'Agua de mesa San Luis sin gas 625 ml', false, true, 1.20, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (24, 4, 'Sporade 500ml', 'Bebida rehidratante Sporade sabor naranja 500 ml', false, true, 2.50, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (25, 5, 'Arroz Costeño Extra 5kg', 'Arroz superior Costeño bolsa de 5 kilogramos', false, true, 22.90, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (26, 6, 'Aceite Primor 1L', 'Aceite vegetal Primor botella 1 litro', false, true, 9.90, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (27, 7, 'Azúcar Rubia Cartavio 1kg', 'Azúcar rubia Cartavio bolsa 1 kilogramo', false, true, 4.20, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (28, 8, 'Fideos Don Vittorio Spaghetti 500g', 'Pasta spaghetti Don Vittorio 500 gramos', false, true, 2.80, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (29, 9, 'Leche Gloria Entera 1L', 'Leche evaporada Gloria tetra pack 1 litro', false, true, 5.80, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (30, 10, 'Yogurt Gloria Frutado 1kg', 'Yogurt Gloria sabor fresa 1 kilogramo', false, true, 7.50, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (31, 11, 'Huevos Pardos x30', 'Huevos de gallina pardos bandeja de 30 unidades', false, true, 18.90, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (32, 12, 'Lay''s Clásicas 150g', 'Papas fritas Lay''s sabor original 150 gramos', false, true, 4.50, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (33, 13, 'Galletas Oreo 117g', 'Galletas Oreo rellenas de crema 117 gramos', false, true, 3.50, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (34, 14, 'Chocolate Sublime 30g', 'Chocolate Sublime con maní 30 gramos', false, true, 1.50, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (35, 15, 'Jabón Protex 110g', 'Jabón antibacterial Protex barra 110 gramos', false, true, 3.80, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (36, 16, 'Pasta Dental Colgate 90g', 'Pasta dental Colgate Triple Acción 90 gramos', false, true, 5.90, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (37, 17, 'Papel Higiénico Suave 4 rollos', 'Papel higiénico Suave doble hoja pack 4 rollos', false, true, 8.50, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (38, 18, 'Detergente Ace 1kg', 'Detergente en polvo Ace Regular 1 kilogramo', false, true, 11.90, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (39, 19, 'Cloro Sapolio 1L', 'Cloro desinfectante Sapolio botella 1 litro', false, true, 4.20, '2025-10-12 12:00:00', '2025-10-12 12:00:00'),
-  (40, 20, 'Lavavajillas Ayudín 750ml', 'Lavavajillas líquido Ayudín limón 750 ml', false, true, 6.50, '2025-10-12 12:00:00', '2025-10-12 12:00:00')
-ON CONFLICT ("id") DO NOTHING;
+  ('01', 'DNI', '45678912', 'María Elena Quispe Rojas', false, 'maria.quispe@email.com', '987654321', NOW(), NOW()),
+  ('01', 'DNI', '72345678', 'Carlos Alberto Mendoza Silva', false, 'carlos.mendoza@email.com', '976543210', NOW(), NOW()),
+  ('01', 'DNI', '51234567', 'Ana Lucía Vargas Torres', false, 'ana.vargas@email.com', '965432109', NOW(), NOW()),
+  ('01', 'DNI', '63456789', 'José Luis Ramírez Castro', false, 'jose.ramirez@email.com', '954321098', NOW(), NOW()),
+  ('01', 'DNI', '44567890', 'Rosa María Flores Huamán', false, 'rosa.flores@email.com', '943210987', NOW(), NOW()),
+  ('06', 'RUC', '20123456789', 'Belleza Integral SAC', false, 'compras@bellezaintegral.pe', '014567890', NOW(), NOW()),
+  ('06', 'RUC', '20567890123', 'Spa Relax Perú EIRL', false, 'admin@sparelax.pe', '015678901', NOW(), NOW()),
+  ('01', 'DNI', '56789012', 'Pedro Pablo Gutiérrez León', false, 'pedro.gutierrez@email.com', '932109876', NOW(), NOW()),
+  ('01', 'DNI', '67890123', 'Lucía Fernanda Paredes Díaz', false, 'lucia.paredes@email.com', '921098765', NOW(), NOW()),
+  ('01', 'DNI', '78901234', 'Miguel Ángel Soto Chávez', false, 'miguel.soto@email.com', '910987654', NOW(), NOW())
+ON CONFLICT ("doc_type_number") DO NOTHING;
 
 -- -----------------------------------------------------------------------------
--- 10. STOCK INICIAL (antes de cualquier movimiento)
---    Se actualizará al final según movimientos reales
+-- 9. CAJAS ABIERTAS (12 turnos)
 -- -----------------------------------------------------------------------------
-INSERT INTO "product_stock" ("id", "product_id", "stock", "valuation_rate", "stock_value", "created_at", "updated_at")
-VALUES
-  (1, 1, 120, 4.20, 504.00, '2025-10-12 13:00:00', '2025-10-12 13:00:00'),
-  (2, 2, 100, 4.10, 410.00, '2025-10-12 13:00:00', '2025-10-12 13:00:00'),
-  (3, 3, 200, 0.85, 170.00, '2025-10-12 13:00:00', '2025-10-12 13:00:00'),
-  (4, 4, 80, 1.80, 144.00, '2025-10-12 13:00:00', '2025-10-12 13:00:00'),
-  (5, 5, 60, 18.50, 1110.00, '2025-10-12 13:00:00', '2025-10-12 13:00:00'),
-  (6, 6, 90, 7.80, 702.00, '2025-10-12 13:00:00', '2025-10-12 13:00:00'),
-  (7, 7, 100, 3.40, 340.00, '2025-10-12 13:00:00', '2025-10-12 13:00:00'),
-  (8, 8, 150, 2.10, 315.00, '2025-10-12 13:00:00', '2025-10-12 13:00:00'),
-  (9, 9, 120, 4.60, 552.00, '2025-10-12 13:00:00', '2025-10-12 13:00:00'),
-  (10, 10, 50, 5.90, 295.00, '2025-10-12 13:00:00', '2025-10-12 13:00:00'),
-  (11, 11, 40, 14.50, 580.00, '2025-10-12 13:00:00', '2025-10-12 13:00:00'),
-  (12, 12, 80, 3.20, 256.00, '2025-10-12 13:00:00', '2025-10-12 13:00:00'),
-  (13, 13, 100, 2.40, 240.00, '2025-10-12 13:00:00', '2025-10-12 13:00:00'),
-  (14, 14, 200, 1.10, 220.00, '2025-10-12 13:00:00', '2025-10-12 13:00:00'),
-  (15, 15, 90, 2.80, 252.00, '2025-10-12 13:00:00', '2025-10-12 13:00:00'),
-  (16, 16, 60, 4.50, 270.00, '2025-10-12 13:00:00', '2025-10-12 13:00:00'),
-  (17, 17, 50, 6.20, 310.00, '2025-10-12 13:00:00', '2025-10-12 13:00:00'),
-  (18, 18, 40, 8.90, 356.00, '2025-10-12 13:00:00', '2025-10-12 13:00:00'),
-  (19, 19, 70, 3.10, 217.00, '2025-10-12 13:00:00', '2025-10-12 13:00:00'),
-  (20, 20, 60, 4.80, 288.00, '2025-10-12 13:00:00', '2025-10-12 13:00:00')
-ON CONFLICT ("id") DO NOTHING;
+INSERT INTO "box_open" ("serie", "user_id", "start_date", "end_date", "status", "notes", "created_at", "updated_at")
+SELECT
+  v.serie, u.id, v.start_date::timestamptz, NULL, 'abierto', v.notes, NOW(), NOW()
+FROM (VALUES
+  ('CAJ-000001', 'caja1@tienda.com', '2025-08-01 08:00:00+00', 'Turno 1 – Cajero Uno'),
+  ('CAJ-000002', 'caja2@tienda.com', '2025-08-03 14:00:00+00', 'Turno 2 – Cajero Dos'),
+  ('CAJ-000003', 'caja1@tienda.com', '2025-08-05 08:00:00+00', 'Turno 3 – Cajero Uno'),
+  ('CAJ-000004', 'caja2@tienda.com', '2025-08-07 14:00:00+00', 'Turno 4 – Cajero Dos'),
+  ('CAJ-000005', 'caja1@tienda.com', '2025-08-09 08:00:00+00', 'Turno 5 – Cajero Uno'),
+  ('CAJ-000006', 'caja2@tienda.com', '2025-08-11 14:00:00+00', 'Turno 6 – Cajero Dos'),
+  ('CAJ-000007', 'caja1@tienda.com', '2025-08-14 08:00:00+00', 'Turno 7 – Cajero Uno'),
+  ('CAJ-000008', 'caja2@tienda.com', '2025-08-17 14:00:00+00', 'Turno 8 – Cajero Dos'),
+  ('CAJ-000009', 'caja1@tienda.com', '2025-08-20 08:00:00+00', 'Turno 9 – Cajero Uno'),
+  ('CAJ-000010', 'caja2@tienda.com', '2025-08-23 14:00:00+00', 'Turno 10 – Cajero Dos'),
+  ('CAJ-000011', 'caja1@tienda.com', '2025-08-26 08:00:00+00', 'Turno 11 – Cajero Uno'),
+  ('CAJ-000012', 'caja2@tienda.com', '2025-08-29 14:00:00+00', 'Turno 12 – Cajero Dos')
+) AS v(serie, email, start_date, notes)
+JOIN "user" u ON u.email = v.email
+WHERE NOT EXISTS (SELECT 1 FROM "box_open" b WHERE b.serie = v.serie);
 
--- -----------------------------------------------------------------------------
--- 11. ÓRDENES DE COMPRA + DETALLES + RECEPCIONES + KARDEX
---     (simulación de reposición realista a lo largo del tiempo)
--- -----------------------------------------------------------------------------
-
--- Orden de compra 1 (Noviembre 2025) - Bebidas y abarrotes
-INSERT INTO "order_purchase" ("id", "serie", "supplier_id", "supplier_name", "supplier_ruc", "status", "address_purchase", "delivery_date", "total", "user_id", "created_at", "updated_at")
-VALUES
-  (1, 'OC-2025-0001', 1, 'Distribuidora Inca Kola S.A.C.', '20100047218', 'recibido', 'Av. La Marina 1234, San Miguel, Lima', '2025-11-12', 1260.00, 3, '2025-11-05 10:00:00', '2025-11-12 16:00:00');
-
-INSERT INTO "detail_order_purchase" ("id", "purchase_id", "product_id", "product_name", "qty_received", "qty", "price", "subtotal", "created_at", "updated_at")
-VALUES
-  (1, 1, 1, 'Inca Kola 2.25L', 120, 120, 4.20, 504.00, '2025-11-05 10:05:00', '2025-11-12 16:00:00'),
-  (2, 1, 2, 'Coca Cola 2.25L', 100, 100, 4.10, 410.00, '2025-11-05 10:05:00', '2025-11-12 16:00:00'),
-  (3, 1, 3, 'Agua San Luis 625ml', 200, 200, 0.85, 170.00, '2025-11-05 10:05:00', '2025-11-12 16:00:00'),
-  (4, 1, 4, 'Sporade 500ml', 98, 100, 1.80, 176.00, '2025-11-05 10:05:00', '2025-11-12 16:00:00');  -- 2 rechazados
-
--- Recepción de la orden 1
-INSERT INTO "receipt_purchase" ("id", "serie", "purchase_id", "status", "supplier_id", "supplier_name", "supplier_ruc", "date_receipt", "note", "total", "user_id", "created_at", "updated_at")
-VALUES
-  (1, 'RC-2025-0001', 1, 'confirmado', 1, 'Distribuidora Inca Kola S.A.C.', '20100047218', '2025-11-12', 'Recepción completa con 2 unidades de Sporade rechazadas por abolladura', 1256.40, 3, '2025-11-12 15:30:00', '2025-11-12 16:00:00');
-
-INSERT INTO "detail_receipt_purchase" ("id", "receipt_id", "detail_purchase_id", "product_id", "product_name", "qty_received", "qty_reject", "qty_accepted", "price", "subtotal", "created_at", "updated_at")
-VALUES
-  (1, 1, 1, 1, 'Inca Kola 2.25L', 120, 0, 120, 4.20, 504.00, '2025-11-12 15:35:00', '2025-11-12 16:00:00'),
-  (2, 1, 2, 2, 'Coca Cola 2.25L', 100, 0, 100, 4.10, 410.00, '2025-11-12 15:35:00', '2025-11-12 16:00:00'),
-  (3, 1, 3, 3, 'Agua San Luis 625ml', 200, 0, 200, 0.85, 170.00, '2025-11-12 15:35:00', '2025-11-12 16:00:00'),
-  (4, 1, 4, 4, 'Sporade 500ml', 100, 2, 98, 1.80, 176.40, '2025-11-12 15:35:00', '2025-11-12 16:00:00');
-
--- Kardex de entrada de la recepción 1
-INSERT INTO "kardex" ("id", "kardex_date", "product_id", "type", "doc_id", "doc_type", "doc_serie", "actual_qty", "after_qty", "incoming_rate", "outgoing_rate", "valuation_rate", "stock_value", "created_at", "updated_at")
-VALUES
-  (1, '2025-11-12', 1, 'IN', 1, 'recepcion', 'RC-2025-0001', 120, 240, 4.20, 0, 4.20, 1008.00, '2025-11-12 16:05:00', '2025-11-12 16:05:00'),
-  (2, '2025-11-12', 2, 'IN', 1, 'recepcion', 'RC-2025-0001', 100, 200, 4.10, 0, 4.10, 820.00, '2025-11-12 16:05:00', '2025-11-12 16:05:00'),
-  (3, '2025-11-12', 3, 'IN', 1, 'recepcion', 'RC-2025-0001', 200, 400, 0.85, 0, 0.85, 340.00, '2025-11-12 16:05:00', '2025-11-12 16:05:00'),
-  (4, '2025-11-12', 4, 'IN', 1, 'recepcion', 'RC-2025-0001', 80, 178, 1.80, 0, 1.80, 320.40, '2025-11-12 16:05:00', '2025-11-12 16:05:00');
-
--- Orden de compra 2 (Diciembre 2025) - Abarrotes y lácteos
-INSERT INTO "order_purchase" ("id", "serie", "supplier_id", "supplier_name", "supplier_ruc", "status", "address_purchase", "delivery_date", "total", "user_id", "created_at", "updated_at")
-VALUES
-  (2, 'OC-2025-0002', 2, 'Alicorp S.A.A.', '20100055237', 'recibido', 'Av. La Marina 1234, San Miguel, Lima', '2025-12-18', 1895.00, 3, '2025-12-10 09:30:00', '2025-12-18 14:00:00');
-
-INSERT INTO "detail_order_purchase" ("id", "purchase_id", "product_id", "product_name", "qty_received", "qty", "price", "subtotal", "created_at", "updated_at")
-VALUES
-  (5, 2, 5, 'Arroz Costeño Extra 5kg', 40, 40, 18.50, 740.00, '2025-12-10 09:35:00', '2025-12-18 14:00:00'),
-  (6, 2, 6, 'Aceite Primor 1L', 60, 60, 7.80, 468.00, '2025-12-10 09:35:00', '2025-12-18 14:00:00'),
-  (7, 2, 7, 'Azúcar Rubia Cartavio 1kg', 80, 80, 3.40, 272.00, '2025-12-10 09:35:00', '2025-12-18 14:00:00'),
-  (8, 2, 8, 'Fideos Don Vittorio Spaghetti 500g', 100, 100, 2.10, 210.00, '2025-12-10 09:35:00', '2025-12-18 14:00:00'),
-  (9, 2, 9, 'Leche Gloria Entera 1L', 40, 40, 4.60, 184.00, '2025-12-10 09:35:00', '2025-12-18 14:00:00');
-
-INSERT INTO "receipt_purchase" ("id", "serie", "purchase_id", "status", "supplier_id", "supplier_name", "supplier_ruc", "date_receipt", "note", "total", "user_id", "created_at", "updated_at")
-VALUES
-  (2, 'RC-2025-0002', 2, 'confirmado', 2, 'Alicorp S.A.A.', '20100055237', '2025-12-18', 'Recepción sin observaciones', 1874.00, 3, '2025-12-18 13:45:00', '2025-12-18 14:00:00');
-
-INSERT INTO "detail_receipt_purchase" ("id", "receipt_id", "detail_purchase_id", "product_id", "product_name", "qty_received", "qty_reject", "qty_accepted", "price", "subtotal", "created_at", "updated_at")
-VALUES
-  (5, 2, 5, 5, 'Arroz Costeño Extra 5kg', 40, 0, 40, 18.50, 740.00, '2025-12-18 13:50:00', '2025-12-18 14:00:00'),
-  (6, 2, 6, 6, 'Aceite Primor 1L', 60, 0, 60, 7.80, 468.00, '2025-12-18 13:50:00', '2025-12-18 14:00:00'),
-  (7, 2, 7, 7, 'Azúcar Rubia Cartavio 1kg', 80, 0, 80, 3.40, 272.00, '2025-12-18 13:50:00', '2025-12-18 14:00:00'),
-  (8, 2, 8, 8, 'Fideos Don Vittorio Spaghetti 500g', 100, 0, 100, 2.10, 210.00, '2025-12-18 13:50:00', '2025-12-18 14:00:00'),
-  (9, 2, 9, 9, 'Leche Gloria Entera 1L', 40, 0, 40, 4.60, 184.00, '2025-12-18 13:50:00', '2025-12-18 14:00:00');
-
-INSERT INTO "kardex" ("id", "kardex_date", "product_id", "type", "doc_id", "doc_type", "doc_serie", "actual_qty", "after_qty", "incoming_rate", "outgoing_rate", "valuation_rate", "stock_value", "created_at", "updated_at")
-VALUES
-  (5, '2025-12-18', 5, 'IN', 2, 'recepcion', 'RC-2025-0002', 60, 100, 18.50, 0, 18.50, 1850.00, '2025-12-18 14:05:00', '2025-12-18 14:05:00'),
-  (6, '2025-12-18', 6, 'IN', 2, 'recepcion', 'RC-2025-0002', 90, 150, 7.80, 0, 7.80, 1170.00, '2025-12-18 14:05:00', '2025-12-18 14:05:00'),
-  (7, '2025-12-18', 7, 'IN', 2, 'recepcion', 'RC-2025-0002', 100, 180, 3.40, 0, 3.40, 612.00, '2025-12-18 14:05:00', '2025-12-18 14:05:00'),
-  (8, '2025-12-18', 8, 'IN', 2, 'recepcion', 'RC-2025-0002', 150, 250, 2.10, 0, 2.10, 525.00, '2025-12-18 14:05:00', '2025-12-18 14:05:00'),
-  (9, '2025-12-18', 9, 'IN', 2, 'recepcion', 'RC-2025-0002', 120, 160, 4.60, 0, 4.60, 736.00, '2025-12-18 14:05:00', '2025-12-18 14:05:00');
+-- Detalle de apertura (solo efectivo)
+INSERT INTO "detail_box_open" ("box_open_id", "mode_payment", "opening_amount", "created_at", "updated_at")
+SELECT b.id, pay.id, v.opening_amount, NOW(), NOW()
+FROM (VALUES
+  ('CAJ-000001', 200.00), ('CAJ-000002', 250.00), ('CAJ-000003', 180.00),
+  ('CAJ-000004', 300.00), ('CAJ-000005', 220.00), ('CAJ-000006', 200.00),
+  ('CAJ-000007', 280.00), ('CAJ-000008', 150.00), ('CAJ-000009', 250.00),
+  ('CAJ-000010', 200.00), ('CAJ-000011', 300.00), ('CAJ-000012', 180.00)
+) AS v(serie, opening_amount)
+JOIN "box_open" b ON b.serie = v.serie
+JOIN "payment" pay ON pay.type = 'cash'
+WHERE NOT EXISTS (SELECT 1 FROM "detail_box_open" d WHERE d.box_open_id = b.id);
 
 -- -----------------------------------------------------------------------------
--- 12. APERTURAS DE CAJA (box_open)
+-- 10. VENTAS + DETALLES + PAGOS + KARDEX
 -- -----------------------------------------------------------------------------
-INSERT INTO "box_open" ("id", "serie", "user_id", "start_date", "end_date", "status", "notes", "created_at", "updated_at")
-VALUES
-  (1, 'CAJA-2025-1101', 2, '2025-11-15 08:00:00', '2025-11-15 22:05:00', 'cerrado', 'Turno mañana-tarde', '2025-11-15 08:00:00', '2025-11-15 22:05:00'),
-  (2, 'CAJA-2025-1205', 2, '2025-12-05 08:00:00', '2025-12-05 21:45:00', 'cerrado', NULL, '2025-12-05 08:00:00', '2025-12-05 21:45:00'),
-  (3, 'CAJA-2026-0110', 4, '2026-01-10 08:00:00', '2026-01-10 22:10:00', 'cerrado', 'Fin de semana', '2026-01-10 08:00:00', '2026-01-10 22:10:00'),
-  (4, 'CAJA-2026-0215', 2, '2026-02-15 08:00:00', '2026-02-15 21:30:00', 'cerrado', NULL, '2026-02-15 08:00:00', '2026-02-15 21:30:00'),
-  (5, 'CAJA-2026-0308', 4, '2026-03-08 08:00:00', NULL, 'abierto', 'Caja actual en operación', '2026-03-08 08:00:00', '2026-03-08 08:00:00')
-ON CONFLICT ("id") DO NOTHING;
+DO $$
+DECLARE
+  r_box RECORD;
+  v_sale_id INT;
+  v_serie TEXT;
+  v_type_code TEXT;
+  v_customer_id INT;
+  v_customer_name TEXT;
+  v_customer_doc_code TEXT;
+  v_customer_doc_number TEXT;
+  v_taxable NUMERIC(12,2);
+  v_igv NUMERIC(12,2);
+  v_total NUMERIC(12,2);
+  v_paid NUMERIC(12,2);
+  v_change NUMERIC(12,2);
+  v_payment_id INT;
+  v_payment_name TEXT;
+  v_sale_date TIMESTAMPTZ;
+  v_product_id INT;
+  v_product_name TEXT;
+  v_qty INT;
+  v_price NUMERIC(12,2);
+  v_subtotal NUMERIC(12,2);
+  v_stock_before INT;
+  v_stock_after INT;
+  v_valuation NUMERIC(12,2);
+  v_boleta_n INT := 1;
+  v_factura_n INT := 1;
+  v_shift_idx INT := 0;
+  v_sale_idx INT;
+  v_pay_type INT;
+  v_is_invoice BOOLEAN;
+  v_generic_id INT;
+  v_user_id INT;
+  prod_skus TEXT[] := ARRAY[
+    'FAC-001','FAC-002','FAC-003','FAC-004','FAC-005',
+    'LAB-001','LAB-002','LAB-003','LAB-004','LAB-005',
+    'PER-001','PER-002','PER-003',
+    'CAP-001','CAP-002','CAP-003',
+    'COR-001','COR-002','COR-003',
+    'ACC-001','ACC-002','ACC-003'
+  ];
+BEGIN
+  SELECT id INTO v_generic_id FROM "customer" WHERE is_generic = true LIMIT 1;
 
-INSERT INTO "detail_box_open" ("id", "box_open_id", "mode_payment", "opening_amount", "created_at", "updated_at")
-VALUES
-  (1, 1, 1, 200.00, '2025-11-15 08:02:00', '2025-11-15 08:02:00'),  -- Efectivo
-  (2, 1, 2, 0.00, '2025-11-15 08:02:00', '2025-11-15 08:02:00'),   -- Tarjeta
-  (3, 1, 3, 0.00, '2025-11-15 08:02:00', '2025-11-15 08:02:00'),   -- Yape
-  (4, 2, 1, 250.00, '2025-12-05 08:02:00', '2025-12-05 08:02:00'),
-  (5, 2, 2, 0.00, '2025-12-05 08:02:00', '2025-12-05 08:02:00'),
-  (6, 2, 3, 0.00, '2025-12-05 08:02:00', '2025-12-05 08:02:00'),
-  (7, 3, 1, 300.00, '2026-01-10 08:02:00', '2026-01-10 08:02:00'),
-  (8, 3, 2, 0.00, '2026-01-10 08:02:00', '2026-01-10 08:02:00'),
-  (9, 3, 3, 0.00, '2026-01-10 08:02:00', '2026-01-10 08:02:00'),
-  (10, 4, 1, 200.00, '2026-02-15 08:02:00', '2026-02-15 08:02:00'),
-  (11, 4, 2, 0.00, '2026-02-15 08:02:00', '2026-02-15 08:02:00'),
-  (12, 4, 3, 0.00, '2026-02-15 08:02:00', '2026-02-15 08:02:00'),
-  (13, 5, 1, 250.00, '2026-03-08 08:02:00', '2026-03-08 08:02:00'),
-  (14, 5, 2, 0.00, '2026-03-08 08:02:00', '2026-03-08 08:02:00'),
-  (15, 5, 3, 0.00, '2026-03-08 08:02:00', '2026-03-08 08:02:00')
-ON CONFLICT ("id") DO NOTHING;
+  FOR r_box IN
+    SELECT b.id AS box_id, b.serie, b.user_id, b.start_date,
+           ROW_NUMBER() OVER (ORDER BY b.serie) - 1 AS shift_idx
+    FROM "box_open" b
+    WHERE b.serie LIKE 'CAJ-%'
+    ORDER BY b.serie
+  LOOP
+    v_shift_idx := r_box.shift_idx;
+    v_user_id := r_box.user_id;
+
+    FOR v_sale_idx IN 0..21 LOOP
+      v_is_invoice := (v_sale_idx % 7 = 0);
+      IF v_is_invoice THEN
+        v_type_code := '01';
+        v_serie := 'F001-' || LPAD(v_factura_n::TEXT, 6, '0');
+        v_factura_n := v_factura_n + 1;
+      ELSE
+        v_type_code := '03';
+        v_serie := 'B001-' || LPAD(v_boleta_n::TEXT, 6, '0');
+        v_boleta_n := v_boleta_n + 1;
+      END IF;
+
+      v_sale_date := r_box.start_date + (v_sale_idx * INTERVAL '12 minutes');
+
+      IF v_is_invoice OR (v_sale_idx % 3 = 0) THEN
+        SELECT id, name, doc_type_code, doc_type_number
+        INTO v_customer_id, v_customer_name, v_customer_doc_code, v_customer_doc_number
+        FROM "customer"
+        WHERE is_generic = false
+        ORDER BY id
+        OFFSET ((v_shift_idx + v_sale_idx) % 10)
+        LIMIT 1;
+      ELSE
+        v_customer_id := v_generic_id;
+        v_customer_name := 'CLIENTES VARIOS';
+        v_customer_doc_code := '01';
+        v_customer_doc_number := '00000000';
+      END IF;
+
+      v_pay_type := (v_shift_idx + v_sale_idx) % 4;
+      IF v_pay_type = 0 THEN
+        SELECT id, name INTO v_payment_id, v_payment_name FROM "payment" WHERE type = 'cash' LIMIT 1;
+      ELSIF v_pay_type = 1 THEN
+        SELECT id, name INTO v_payment_id, v_payment_name FROM "payment" WHERE type = 'card' LIMIT 1;
+      ELSIF v_pay_type = 2 THEN
+        SELECT id, name INTO v_payment_id, v_payment_name FROM "payment" WHERE type = 'digital_wallet' AND name = 'Yape' LIMIT 1;
+      ELSE
+        SELECT id, name INTO v_payment_id, v_payment_name FROM "payment" WHERE type = 'digital_wallet' AND name = 'Plin' LIMIT 1;
+      END IF;
+
+      -- Línea 1
+      SELECT p.id, p.name, pp.amount
+      INTO v_product_id, v_product_name, v_price
+      FROM "product" p
+      JOIN "product_price" pp ON pp.product_id = p.id AND pp.selling = true AND pp.deleted_at IS NULL
+      WHERE p.sku = prod_skus[((v_shift_idx * 22 + v_sale_idx) % 22) + 1]
+      LIMIT 1;
+
+      v_qty := 1 + ((v_shift_idx + v_sale_idx) % 2);
+      v_subtotal := ROUND(v_price * v_qty, 2);
+      v_total := v_subtotal;
+
+      -- Línea 2
+      SELECT p.id, p.name, pp.amount
+      INTO v_product_id, v_product_name, v_price
+      FROM "product" p
+      JOIN "product_price" pp ON pp.product_id = p.id AND pp.selling = true AND pp.deleted_at IS NULL
+      WHERE p.sku = prod_skus[(((v_shift_idx * 22 + v_sale_idx) + 5) % 22) + 1]
+      LIMIT 1;
+
+      v_qty := 1;
+      v_subtotal := ROUND(v_price * v_qty, 2);
+      v_total := v_total + v_subtotal;
+
+      v_taxable := ROUND(v_total / 1.18, 2);
+      v_igv := ROUND(v_total - v_taxable, 2);
+
+      v_paid := v_total;
+      v_change := 0;
+      IF v_pay_type = 0 AND (v_sale_idx % 5 = 0) THEN
+        v_paid := CEIL(v_total / 10.0) * 10;
+        v_change := ROUND(v_paid - v_total, 2);
+      END IF;
+
+      INSERT INTO "sale" (
+        "serie", "box_open_id", "type_code", "user_id", "sale_date",
+        "customer_id", "customer_name", "customer_doc_code", "customer_doc_number",
+        "igv_rate", "taxable_amount", "igv_total", "total",
+        "paid_amount", "change_amount", "is_return", "return_against_id",
+        "created_at", "updated_at"
+      ) VALUES (
+        v_serie, r_box.box_id, v_type_code, v_user_id, v_sale_date,
+        v_customer_id, v_customer_name, v_customer_doc_code, v_customer_doc_number,
+        0.18, v_taxable, v_igv, v_total,
+        v_paid, v_change, false, NULL,
+        NOW(), NOW()
+      ) RETURNING id INTO v_sale_id;
+
+      -- Detalle + Kardex línea 1
+      SELECT p.id, p.name, pp.amount
+      INTO v_product_id, v_product_name, v_price
+      FROM "product" p
+      JOIN "product_price" pp ON pp.product_id = p.id AND pp.selling = true AND pp.deleted_at IS NULL
+      WHERE p.sku = prod_skus[((v_shift_idx * 22 + v_sale_idx) % 22) + 1]
+      LIMIT 1;
+      v_qty := 1 + ((v_shift_idx + v_sale_idx) % 2);
+      v_subtotal := ROUND(v_price * v_qty, 2);
+
+      INSERT INTO "detail_sale" (
+        "sale_id", "product_id", "product_name", "qty", "price", "subtotal",
+        "created_at", "updated_at"
+      ) VALUES (
+        v_sale_id, v_product_id, v_product_name, v_qty, v_price, v_subtotal,
+        NOW(), NOW()
+      );
+
+      SELECT stock, valuation_rate INTO v_stock_before, v_valuation
+      FROM "product_stock" WHERE product_id = v_product_id AND deleted_at IS NULL LIMIT 1;
+      v_stock_after := v_stock_before - v_qty;
+
+      INSERT INTO "kardex" (
+        "kardex_date", "product_id", "type", "doc_id", "doc_type", "doc_serie",
+        "actual_qty", "after_qty", "incoming_rate", "outgoing_rate",
+        "valuation_rate", "stock_value", "created_at", "updated_at"
+      ) VALUES (
+        v_sale_date::date, v_product_id, 'OUT', v_sale_id, 'venta', v_serie,
+        v_stock_before, v_stock_after, 0, v_price,
+        v_valuation, ROUND(v_valuation * v_stock_after, 2), NOW(), NOW()
+      );
+
+      UPDATE "product_stock"
+      SET stock = v_stock_after,
+          stock_value = ROUND(v_valuation * v_stock_after, 2),
+          updated_at = NOW()
+      WHERE product_id = v_product_id AND deleted_at IS NULL;
+
+      -- Detalle + Kardex línea 2
+      SELECT p.id, p.name, pp.amount
+      INTO v_product_id, v_product_name, v_price
+      FROM "product" p
+      JOIN "product_price" pp ON pp.product_id = p.id AND pp.selling = true AND pp.deleted_at IS NULL
+      WHERE p.sku = prod_skus[(((v_shift_idx * 22 + v_sale_idx) + 5) % 22) + 1]
+      LIMIT 1;
+      v_qty := 1;
+      v_subtotal := ROUND(v_price * v_qty, 2);
+
+      INSERT INTO "detail_sale" (
+        "sale_id", "product_id", "product_name", "qty", "price", "subtotal",
+        "created_at", "updated_at"
+      ) VALUES (
+        v_sale_id, v_product_id, v_product_name, v_qty, v_price, v_subtotal,
+        NOW(), NOW()
+      );
+
+      SELECT stock, valuation_rate INTO v_stock_before, v_valuation
+      FROM "product_stock" WHERE product_id = v_product_id AND deleted_at IS NULL LIMIT 1;
+      v_stock_after := v_stock_before - v_qty;
+
+      INSERT INTO "kardex" (
+        "kardex_date", "product_id", "type", "doc_id", "doc_type", "doc_serie",
+        "actual_qty", "after_qty", "incoming_rate", "outgoing_rate",
+        "valuation_rate", "stock_value", "created_at", "updated_at"
+      ) VALUES (
+        v_sale_date::date, v_product_id, 'OUT', v_sale_id, 'venta', v_serie,
+        v_stock_before, v_stock_after, 0, v_price,
+        v_valuation, ROUND(v_valuation * v_stock_after, 2), NOW(), NOW()
+      );
+
+      UPDATE "product_stock"
+      SET stock = v_stock_after,
+          stock_value = ROUND(v_valuation * v_stock_after, 2),
+          updated_at = NOW()
+      WHERE product_id = v_product_id AND deleted_at IS NULL;
+
+      -- Pago
+      INSERT INTO "sale_payment" (
+        "sale_id", "box_open_id", "payment_id", "payment_name", "amount",
+        "created_at", "updated_at"
+      ) VALUES (
+        v_sale_id, r_box.box_id, v_payment_id, v_payment_name, v_total,
+        NOW(), NOW()
+      );
+
+    END LOOP;
+  END LOOP;
+END $$;
 
 -- -----------------------------------------------------------------------------
--- 13. VENTAS + DETALLES + PAGOS (ejemplos realistas)
---     IGV 18% - se calcula sobre base imponible
+-- 11. NOTAS DE CRÉDITO (ejemplo determinista)
 -- -----------------------------------------------------------------------------
+DO $$
+DECLARE
+  r_sale RECORD;
+  v_nc_id INT;
+  v_nc_serie TEXT;
+  v_nc_n INT := 1;
+  v_return_total NUMERIC(12,2);
+  v_taxable NUMERIC(12,2);
+  v_igv NUMERIC(12,2);
+  v_product_id INT;
+  v_product_name TEXT;
+  v_qty INT;
+  v_price NUMERIC(12,2);
+  v_subtotal NUMERIC(12,2);
+  v_stock_before INT;
+  v_stock_after INT;
+  v_valuation NUMERIC(12,2);
+  v_nc_date TIMESTAMPTZ;
+  v_user_id INT;
+  v_payment_id INT;
+  v_payment_name TEXT;
+BEGIN
+  SELECT id INTO v_user_id FROM "user" WHERE email = 'caja1@tienda.com' LIMIT 1;
 
--- Venta 1 (Boleta - Cliente genérico)
-INSERT INTO "sale" ("id", "serie", "box_open_id", "type_code", "user_id", "sale_date", "customer_id", "customer_name", "customer_doc_code", "customer_doc_number", "igv_rate", "taxable_amount", "igv_total", "total", "paid_amount", "change_amount", "is_return", "created_at", "updated_at")
-VALUES
-  (1, 'B001-00000001', 1, '03', 2, '2025-11-15 10:25:00', 1, 'CLIENTES VARIOS', '01', '00000000', 18.00, 25.42, 4.58, 30.00, 50.00, 20.00, false, '2025-11-15 10:25:00', '2025-11-15 10:25:00');
+  -- NC sobre B001-000004
+  SELECT s.* INTO r_sale
+  FROM "sale" s
+  WHERE s.serie = 'B001-000004' AND s.is_return = false
+  LIMIT 1;
 
-INSERT INTO "detail_sale" ("id", "sale_id", "product_id", "product_name", "qty", "price", "subtotal", "created_at", "updated_at")
-VALUES
-  (1, 1, 1, 'Inca Kola 2.25L', 2, 5.50, 11.00, '2025-11-15 10:25:00', '2025-11-15 10:25:00'),
-  (2, 1, 14, 'Chocolate Sublime 30g', 4, 1.50, 6.00, '2025-11-15 10:25:00', '2025-11-15 10:25:00'),
-  (3, 1, 3, 'Agua San Luis 625ml', 5, 1.20, 6.00, '2025-11-15 10:25:00', '2025-11-15 10:25:00'),
-  (4, 1, 13, 'Galletas Oreo 117g', 2, 3.50, 7.00, '2025-11-15 10:25:00', '2025-11-15 10:25:00');
+  IF FOUND THEN
+    SELECT ds.product_id, ds.product_name, ds.price, 1
+    INTO v_product_id, v_product_name, v_price, v_qty
+    FROM "detail_sale" ds
+    WHERE ds.sale_id = r_sale.id
+    ORDER BY ds.id LIMIT 1;
 
-INSERT INTO "sale_payment" ("id", "sale_id", "box_open_id", "payment_id", "payment_name", "amount", "created_at", "updated_at")
-VALUES
-  (1, 1, 1, 1, 'Efectivo', 50.00, '2025-11-15 10:26:00', '2025-11-15 10:26:00');
+    IF FOUND THEN
+      v_subtotal := ROUND(v_price * v_qty, 2);
+      v_return_total := v_subtotal;
+      v_taxable := ROUND(v_return_total / 1.18, 2);
+      v_igv := ROUND(v_return_total - v_taxable, 2);
+      v_nc_serie := 'NC001-' || LPAD(v_nc_n::TEXT, 6, '0');
+      v_nc_n := v_nc_n + 1;
+      v_nc_date := r_sale.sale_date + INTERVAL '2 hours';
 
--- Kardex de salida venta 1
-INSERT INTO "kardex" ("id", "kardex_date", "product_id", "type", "doc_id", "doc_type", "doc_serie", "actual_qty", "after_qty", "incoming_rate", "outgoing_rate", "valuation_rate", "stock_value", "created_at", "updated_at")
-VALUES
-  (10, '2025-11-15', 1, 'OUT', 1, 'venta', 'B001-00000001', 240, 238, 0, 5.50, 4.20, 999.60, '2025-11-15 10:27:00', '2025-11-15 10:27:00'),
-  (11, '2025-11-15', 14, 'OUT', 1, 'venta', 'B001-00000001', 200, 196, 0, 1.50, 1.10, 215.60, '2025-11-15 10:27:00', '2025-11-15 10:27:00'),
-  (12, '2025-11-15', 3, 'OUT', 1, 'venta', 'B001-00000001', 400, 395, 0, 1.20, 0.85, 335.75, '2025-11-15 10:27:00', '2025-11-15 10:27:00'),
-  (13, '2025-11-15', 13, 'OUT', 1, 'venta', 'B001-00000001', 100, 98, 0, 3.50, 2.40, 235.20, '2025-11-15 10:27:00', '2025-11-15 10:27:00');
+      SELECT payment_id, payment_name INTO v_payment_id, v_payment_name
+      FROM "sale_payment" WHERE sale_id = r_sale.id LIMIT 1;
 
--- Venta 2 (Factura - Cliente con RUC)
-INSERT INTO "sale" ("id", "serie", "box_open_id", "type_code", "user_id", "sale_date", "customer_id", "customer_name", "customer_doc_code", "customer_doc_number", "igv_rate", "taxable_amount", "igv_total", "total", "paid_amount", "change_amount", "is_return", "created_at", "updated_at")
-VALUES
-  (2, 'F001-00000001', 1, '01', 2, '2025-11-15 14:40:00', 4, 'Minimarket El Sol S.A.C.', '06', '20567890123', 18.00, 152.54, 27.46, 180.00, 180.00, 0.00, false, '2025-11-15 14:40:00', '2025-11-15 14:40:00');
+      INSERT INTO "sale" (
+        "serie", "box_open_id", "type_code", "user_id", "sale_date",
+        "customer_id", "customer_name", "customer_doc_code", "customer_doc_number",
+        "igv_rate", "taxable_amount", "igv_total", "total",
+        "paid_amount", "change_amount", "is_return", "return_against_id",
+        "created_at", "updated_at"
+      ) VALUES (
+        v_nc_serie, r_sale.box_open_id, '07', v_user_id, v_nc_date,
+        r_sale.customer_id, r_sale.customer_name, r_sale.customer_doc_code, r_sale.customer_doc_number,
+        0.18, v_taxable, v_igv, v_return_total,
+        v_return_total, 0, true, r_sale.id,
+        NOW(), NOW()
+      ) RETURNING id INTO v_nc_id;
 
-INSERT INTO "detail_sale" ("id", "sale_id", "product_id", "product_name", "qty", "price", "subtotal", "created_at", "updated_at")
-VALUES
-  (5, 2, 5, 'Arroz Costeño Extra 5kg', 4, 22.90, 91.60, '2025-11-15 14:40:00', '2025-11-15 14:40:00'),
-  (6, 2, 6, 'Aceite Primor 1L', 6, 9.90, 59.40, '2025-11-15 14:40:00', '2025-11-15 14:40:00'),
-  (7, 2, 9, 'Leche Gloria Entera 1L', 5, 5.80, 29.00, '2025-11-15 14:40:00', '2025-11-15 14:40:00');
+      INSERT INTO "detail_sale" (
+        "sale_id", "product_id", "product_name", "qty", "price", "subtotal",
+        "created_at", "updated_at"
+      ) VALUES (v_nc_id, v_product_id, v_product_name, v_qty, v_price, v_subtotal, NOW(), NOW());
 
-INSERT INTO "sale_payment" ("id", "sale_id", "box_open_id", "payment_id", "payment_name", "amount", "created_at", "updated_at")
-VALUES
-  (2, 2, 1, 2, 'Tarjeta de Crédito', 180.00, '2025-11-15 14:41:00', '2025-11-15 14:41:00');
+      INSERT INTO "sale_payment" (
+        "sale_id", "box_open_id", "payment_id", "payment_name", "amount",
+        "created_at", "updated_at"
+      ) VALUES (v_nc_id, r_sale.box_open_id, v_payment_id, v_payment_name, -v_return_total, NOW(), NOW());
 
-INSERT INTO "kardex" ("id", "kardex_date", "product_id", "type", "doc_id", "doc_type", "doc_serie", "actual_qty", "after_qty", "incoming_rate", "outgoing_rate", "valuation_rate", "stock_value", "created_at", "updated_at")
-VALUES
-  (14, '2025-11-15', 5, 'OUT', 2, 'venta', 'F001-00000001', 100, 96, 0, 22.90, 18.50, 1776.00, '2025-11-15 14:42:00', '2025-11-15 14:42:00'),
-  (15, '2025-11-15', 6, 'OUT', 2, 'venta', 'F001-00000001', 150, 144, 0, 9.90, 7.80, 1123.20, '2025-11-15 14:42:00', '2025-11-15 14:42:00'),
-  (16, '2025-11-15', 9, 'OUT', 2, 'venta', 'F001-00000001', 160, 155, 0, 5.80, 4.60, 713.00, '2025-11-15 14:42:00', '2025-11-15 14:42:00');
+      SELECT stock, valuation_rate INTO v_stock_before, v_valuation
+      FROM "product_stock" WHERE product_id = v_product_id AND deleted_at IS NULL LIMIT 1;
+      v_stock_after := v_stock_before + v_qty;
 
--- Venta 3 (Boleta - Yape)
-INSERT INTO "sale" ("id", "serie", "box_open_id", "type_code", "user_id", "sale_date", "customer_id", "customer_name", "customer_doc_code", "customer_doc_number", "igv_rate", "taxable_amount", "igv_total", "total", "paid_amount", "change_amount", "is_return", "created_at", "updated_at")
-VALUES
-  (3, 'B001-00000002', 2, '03', 2, '2025-12-05 11:15:00', 2, 'Roberto Carlos Gómez Huamán', '01', '45678912', 18.00, 42.37, 7.63, 50.00, 50.00, 0.00, false, '2025-12-05 11:15:00', '2025-12-05 11:15:00');
+      INSERT INTO "kardex" (
+        "kardex_date", "product_id", "type", "doc_id", "doc_type", "doc_serie",
+        "actual_qty", "after_qty", "incoming_rate", "outgoing_rate",
+        "valuation_rate", "stock_value", "created_at", "updated_at"
+      ) VALUES (
+        v_nc_date::date, v_product_id, 'IN', v_nc_id, 'nota_credito', v_nc_serie,
+        v_stock_before, v_stock_after, v_price, 0,
+        v_valuation, ROUND(v_valuation * v_stock_after, 2), NOW(), NOW()
+      );
 
-INSERT INTO "detail_sale" ("id", "sale_id", "product_id", "product_name", "qty", "price", "subtotal", "created_at", "updated_at")
-VALUES
-  (8, 3, 11, 'Huevos Pardos x30', 1, 18.90, 18.90, '2025-12-05 11:15:00', '2025-12-05 11:15:00'),
-  (9, 3, 10, 'Yogurt Gloria Frutado 1kg', 2, 7.50, 15.00, '2025-12-05 11:15:00', '2025-12-05 11:15:00'),
-  (10, 3, 12, 'Lay''s Clásicas 150g', 2, 4.50, 9.00, '2025-12-05 11:15:00', '2025-12-05 11:15:00'),
-  (11, 3, 7, 'Azúcar Rubia Cartavio 1kg', 2, 4.20, 8.40, '2025-12-05 11:15:00', '2025-12-05 11:15:00');
-
-INSERT INTO "sale_payment" ("id", "sale_id", "box_open_id", "payment_id", "payment_name", "amount", "created_at", "updated_at")
-VALUES
-  (3, 3, 2, 3, 'Yape', 50.00, '2025-12-05 11:16:00', '2025-12-05 11:16:00');
-
-INSERT INTO "kardex" ("id", "kardex_date", "product_id", "type", "doc_id", "doc_type", "doc_serie", "actual_qty", "after_qty", "incoming_rate", "outgoing_rate", "valuation_rate", "stock_value", "created_at", "updated_at")
-VALUES
-  (17, '2025-12-05', 11, 'OUT', 3, 'venta', 'B001-00000002', 40, 39, 0, 18.90, 14.50, 565.50, '2025-12-05 11:17:00', '2025-12-05 11:17:00'),
-  (18, '2025-12-05', 10, 'OUT', 3, 'venta', 'B001-00000002', 50, 48, 0, 7.50, 5.90, 283.20, '2025-12-05 11:17:00', '2025-12-05 11:17:00'),
-  (19, '2025-12-05', 12, 'OUT', 3, 'venta', 'B001-00000002', 80, 78, 0, 4.50, 3.20, 249.60, '2025-12-05 11:17:00', '2025-12-05 11:17:00'),
-  (20, '2025-12-05', 7, 'OUT', 3, 'venta', 'B001-00000002', 180, 178, 0, 4.20, 3.40, 605.20, '2025-12-05 11:17:00', '2025-12-05 11:17:00');
-
--- Venta 4 (Enero 2026)
-INSERT INTO "sale" ("id", "serie", "box_open_id", "type_code", "user_id", "sale_date", "customer_id", "customer_name", "customer_doc_code", "customer_doc_number", "igv_rate", "taxable_amount", "igv_total", "total", "paid_amount", "change_amount", "is_return", "created_at", "updated_at")
-VALUES
-  (4, 'B001-00000003', 3, '03', 4, '2026-01-10 16:20:00', 6, 'Sofía Isabel Chávez Torres', '01', '75891234', 18.00, 67.80, 12.20, 80.00, 100.00, 20.00, false, '2026-01-10 16:20:00', '2026-01-10 16:20:00');
-
-INSERT INTO "detail_sale" ("id", "sale_id", "product_id", "product_name", "qty", "price", "subtotal", "created_at", "updated_at")
-VALUES
-  (12, 4, 17, 'Papel Higiénico Suave 4 rollos', 3, 8.50, 25.50, '2026-01-10 16:20:00', '2026-01-10 16:20:00'),
-  (13, 4, 18, 'Detergente Ace 1kg', 2, 11.90, 23.80, '2026-01-10 16:20:00', '2026-01-10 16:20:00'),
-  (14, 4, 15, 'Jabón Protex 110g', 4, 3.80, 15.20, '2026-01-10 16:20:00', '2026-01-10 16:20:00'),
-  (15, 4, 16, 'Pasta Dental Colgate 90g', 2, 5.90, 11.80, '2026-01-10 16:20:00', '2026-01-10 16:20:00'),
-  (16, 4, 19, 'Cloro Sapolio 1L', 1, 4.20, 4.20, '2026-01-10 16:20:00', '2026-01-10 16:20:00');
-
-INSERT INTO "sale_payment" ("id", "sale_id", "box_open_id", "payment_id", "payment_name", "amount", "created_at", "updated_at")
-VALUES
-  (4, 4, 3, 1, 'Efectivo', 100.00, '2026-01-10 16:21:00', '2026-01-10 16:21:00');
-
-INSERT INTO "kardex" ("id", "kardex_date", "product_id", "type", "doc_id", "doc_type", "doc_serie", "actual_qty", "after_qty", "incoming_rate", "outgoing_rate", "valuation_rate", "stock_value", "created_at", "updated_at")
-VALUES
-  (21, '2026-01-10', 17, 'OUT', 4, 'venta', 'B001-00000003', 50, 47, 0, 8.50, 6.20, 291.40, '2026-01-10 16:22:00', '2026-01-10 16:22:00'),
-  (22, '2026-01-10', 18, 'OUT', 4, 'venta', 'B001-00000003', 40, 38, 0, 11.90, 8.90, 338.20, '2026-01-10 16:22:00', '2026-01-10 16:22:00'),
-  (23, '2026-01-10', 15, 'OUT', 4, 'venta', 'B001-00000003', 90, 86, 0, 3.80, 2.80, 240.80, '2026-01-10 16:22:00', '2026-01-10 16:22:00'),
-  (24, '2026-01-10', 16, 'OUT', 4, 'venta', 'B001-00000003', 60, 58, 0, 5.90, 4.50, 261.00, '2026-01-10 16:22:00', '2026-01-10 16:22:00'),
-  (25, '2026-01-10', 19, 'OUT', 4, 'venta', 'B001-00000003', 70, 69, 0, 4.20, 3.10, 213.90, '2026-01-10 16:22:00', '2026-01-10 16:22:00');
-
--- -----------------------------------------------------------------------------
--- 14. CIERRES DE CAJA (box_closed) - ejemplo para la primera caja
--- -----------------------------------------------------------------------------
-INSERT INTO "box_closed" ("id", "serie", "user_id", "box_open_id", "start_date", "end_date", "status", "notes", "created_at", "updated_at")
-VALUES
-  (1, 'CIERRE-2025-1101', 2, 1, '2025-11-15 08:00:00', '2025-11-15 22:05:00', 'cerrado', 'Cierre normal sin diferencias', '2025-11-15 22:05:00', '2025-11-15 22:05:00');
-
-INSERT INTO "detail_box_closed" ("id", "box_closed_id", "mode_payment", "mode_payment_name", "opening_amount", "expected_amount", "closing_amount", "difference_amount", "created_at", "updated_at")
-VALUES
-  (1, 1, 1, 'Efectivo', 200.00, 230.00, 230.00, 0.00, '2025-11-15 22:06:00', '2025-11-15 22:06:00'),
-  (2, 1, 2, 'Tarjeta de Crédito', 0.00, 180.00, 180.00, 0.00, '2025-11-15 22:06:00', '2025-11-15 22:06:00'),
-  (3, 1, 3, 'Yape', 0.00, 0.00, 0.00, 0.00, '2025-11-15 22:06:00', '2025-11-15 22:06:00');
+      UPDATE "product_stock"
+      SET stock = v_stock_after, stock_value = ROUND(v_valuation * v_stock_after, 2), updated_at = NOW()
+      WHERE product_id = v_product_id AND deleted_at IS NULL;
+    END IF;
+  END IF;
+END $$;
 
 -- -----------------------------------------------------------------------------
--- 15. AJUSTE DE STOCK (merma por vencimiento)
+-- 12. MERMAS
 -- -----------------------------------------------------------------------------
-INSERT INTO "stock_adjustment" ("id", "serie", "user_id", "stock_adjustment_date", "reason_id", "reason_name", "direction", "notes", "status", "total_qty", "total_value", "created_at", "updated_at")
-VALUES
-  (1, 'AJ-2026-0001', 3, '2026-02-20 10:00:00', 1, 'EXPIRY', 'Out', 'Yogurt próximo a vencer - se retira del stock', 'confirmado', 5, 29.50, '2026-02-20 10:00:00', '2026-02-20 10:15:00');
+DO $$
+DECLARE
+  v_adj_id INT;
+  v_reason_id INT;
+  v_user_id INT;
+  v_product_id INT;
+  v_product_name TEXT;
+  v_qty INT;
+  v_valuation NUMERIC(12,2);
+  v_subtotal NUMERIC(12,2);
+  v_stock_before INT;
+  v_stock_after INT;
+  v_total_qty INT;
+  v_total_value NUMERIC(12,2);
+  v_serie TEXT;
+  v_date DATE;
+BEGIN
+  SELECT id INTO v_user_id FROM "user" WHERE email = 'carlos.mendoza@tienda.com' LIMIT 1;
 
-INSERT INTO "detail_stock_adjustment" ("id", "stock_adjustment_id", "product_id", "product_name", "qty", "valuation_rate", "subtotal", "created_at", "updated_at")
-VALUES
-  (1, 1, 10, 'Yogurt Gloria Frutado 1kg', 5, 5.90, 29.50, '2026-02-20 10:05:00', '2026-02-20 10:15:00');
+  -- Merma 1: EXPIRY
+  SELECT id INTO v_reason_id FROM "reason" WHERE name = 'EXPIRY' AND status = 'OUT' LIMIT 1;
+  v_serie := 'MER-000001';
+  v_date := '2025-08-08';
+  v_total_qty := 0;
+  v_total_value := 0;
 
-INSERT INTO "kardex" ("id", "kardex_date", "product_id", "type", "doc_id", "doc_type", "doc_serie", "actual_qty", "after_qty", "incoming_rate", "outgoing_rate", "valuation_rate", "stock_value", "created_at", "updated_at")
-VALUES
-  (26, '2026-02-20', 10, 'OUT', 1, 'merma', 'AJ-2026-0001', 48, 43, 0, 0, 5.90, 253.70, '2026-02-20 10:16:00', '2026-02-20 10:16:00');
+  INSERT INTO "stock_adjustment" (
+    "serie", "user_id", "stock_adjustment_date", "reason_id", "reason_name",
+    "direction", "notes", "status", "total_qty", "total_value",
+    "created_at", "updated_at"
+  ) VALUES (
+    v_serie, v_user_id, v_date, v_reason_id, 'EXPIRY',
+    'Out', 'Merma por vencimiento', 'confirmado', 0, 0, NOW(), NOW()
+  ) RETURNING id INTO v_adj_id;
+
+  -- FAC-004
+  SELECT p.id, p.name, ps.stock, ps.valuation_rate
+  INTO v_product_id, v_product_name, v_stock_before, v_valuation
+  FROM "product" p JOIN "product_stock" ps ON ps.product_id = p.id
+  WHERE p.sku = 'FAC-004' AND ps.deleted_at IS NULL LIMIT 1;
+  v_qty := LEAST(4, v_stock_before);
+  v_subtotal := ROUND(v_valuation * v_qty, 2);
+  v_total_qty := v_total_qty + v_qty;
+  v_total_value := v_total_value + v_subtotal;
+  v_stock_after := v_stock_before - v_qty;
+
+  INSERT INTO "detail_stock_adjustment" (
+    "stock_adjustment_id", "product_id", "product_name", "qty", "valuation_rate", "subtotal",
+    "created_at", "updated_at"
+  ) VALUES (v_adj_id, v_product_id, v_product_name, v_qty, v_valuation, v_subtotal, NOW(), NOW());
+
+  INSERT INTO "kardex" (
+    "kardex_date", "product_id", "type", "doc_id", "doc_type", "doc_serie",
+    "actual_qty", "after_qty", "incoming_rate", "outgoing_rate",
+    "valuation_rate", "stock_value", "created_at", "updated_at"
+  ) VALUES (
+    v_date, v_product_id, 'OUT', v_adj_id, 'merma', v_serie,
+    v_stock_before, v_stock_after, 0, v_valuation,
+    v_valuation, ROUND(v_valuation * v_stock_after, 2), NOW(), NOW()
+  );
+  UPDATE "product_stock" SET stock = v_stock_after, stock_value = ROUND(v_valuation*v_stock_after,2), updated_at = NOW()
+  WHERE product_id = v_product_id AND deleted_at IS NULL;
+
+  -- FAC-005
+  SELECT p.id, p.name, ps.stock, ps.valuation_rate
+  INTO v_product_id, v_product_name, v_stock_before, v_valuation
+  FROM "product" p JOIN "product_stock" ps ON ps.product_id = p.id
+  WHERE p.sku = 'FAC-005' AND ps.deleted_at IS NULL LIMIT 1;
+  v_qty := LEAST(3, v_stock_before);
+  v_subtotal := ROUND(v_valuation * v_qty, 2);
+  v_total_qty := v_total_qty + v_qty;
+  v_total_value := v_total_value + v_subtotal;
+  v_stock_after := v_stock_before - v_qty;
+
+  INSERT INTO "detail_stock_adjustment" (
+    "stock_adjustment_id", "product_id", "product_name", "qty", "valuation_rate", "subtotal",
+    "created_at", "updated_at"
+  ) VALUES (v_adj_id, v_product_id, v_product_name, v_qty, v_valuation, v_subtotal, NOW(), NOW());
+
+  INSERT INTO "kardex" (
+    "kardex_date", "product_id", "type", "doc_id", "doc_type", "doc_serie",
+    "actual_qty", "after_qty", "incoming_rate", "outgoing_rate",
+    "valuation_rate", "stock_value", "created_at", "updated_at"
+  ) VALUES (
+    v_date, v_product_id, 'OUT', v_adj_id, 'merma', v_serie,
+    v_stock_before, v_stock_after, 0, v_valuation,
+    v_valuation, ROUND(v_valuation * v_stock_after, 2), NOW(), NOW()
+  );
+  UPDATE "product_stock" SET stock = v_stock_after, stock_value = ROUND(v_valuation*v_stock_after,2), updated_at = NOW()
+  WHERE product_id = v_product_id AND deleted_at IS NULL;
+
+  UPDATE "stock_adjustment" SET total_qty = v_total_qty, total_value = v_total_value WHERE id = v_adj_id;
+END $$;
 
 -- -----------------------------------------------------------------------------
--- 16. ACTUALIZACIÓN FINAL DE STOCK (refleja todos los movimientos)
+-- 13. CIERRE DE CAJAS (conciliación exacta)
 -- -----------------------------------------------------------------------------
-UPDATE "product_stock" SET stock = 238, stock_value = 999.60, updated_at = '2026-03-08 12:00:00' WHERE product_id = 1;
-UPDATE "product_stock" SET stock = 200, stock_value = 820.00, updated_at = '2026-03-08 12:00:00' WHERE product_id = 2;
-UPDATE "product_stock" SET stock = 395, stock_value = 335.75, updated_at = '2026-03-08 12:00:00' WHERE product_id = 3;
-UPDATE "product_stock" SET stock = 178, stock_value = 320.40, updated_at = '2026-03-08 12:00:00' WHERE product_id = 4;
-UPDATE "product_stock" SET stock = 96, stock_value = 1776.00, updated_at = '2026-03-08 12:00:00' WHERE product_id = 5;
-UPDATE "product_stock" SET stock = 144, stock_value = 1123.20, updated_at = '2026-03-08 12:00:00' WHERE product_id = 6;
-UPDATE "product_stock" SET stock = 178, stock_value = 605.20, updated_at = '2026-03-08 12:00:00' WHERE product_id = 7;
-UPDATE "product_stock" SET stock = 250, stock_value = 525.00, updated_at = '2026-03-08 12:00:00' WHERE product_id = 8;
-UPDATE "product_stock" SET stock = 155, stock_value = 713.00, updated_at = '2026-03-08 12:00:00' WHERE product_id = 9;
-UPDATE "product_stock" SET stock = 43, stock_value = 253.70, updated_at = '2026-03-08 12:00:00' WHERE product_id = 10;
-UPDATE "product_stock" SET stock = 39, stock_value = 565.50, updated_at = '2026-03-08 12:00:00' WHERE product_id = 11;
-UPDATE "product_stock" SET stock = 78, stock_value = 249.60, updated_at = '2026-03-08 12:00:00' WHERE product_id = 12;
-UPDATE "product_stock" SET stock = 98, stock_value = 235.20, updated_at = '2026-03-08 12:00:00' WHERE product_id = 13;
-UPDATE "product_stock" SET stock = 196, stock_value = 215.60, updated_at = '2026-03-08 12:00:00' WHERE product_id = 14;
-UPDATE "product_stock" SET stock = 86, stock_value = 240.80, updated_at = '2026-03-08 12:00:00' WHERE product_id = 15;
-UPDATE "product_stock" SET stock = 58, stock_value = 261.00, updated_at = '2026-03-08 12:00:00' WHERE product_id = 16;
-UPDATE "product_stock" SET stock = 47, stock_value = 291.40, updated_at = '2026-03-08 12:00:00' WHERE product_id = 17;
-UPDATE "product_stock" SET stock = 38, stock_value = 338.20, updated_at = '2026-03-08 12:00:00' WHERE product_id = 18;
-UPDATE "product_stock" SET stock = 69, stock_value = 213.90, updated_at = '2026-03-08 12:00:00' WHERE product_id = 19;
-UPDATE "product_stock" SET stock = 60, stock_value = 288.00, updated_at = '2026-03-08 12:00:00' WHERE product_id = 20;
+DO $$
+DECLARE
+  r_box RECORD;
+  v_closed_id INT;
+  r_pay RECORD;
+  v_opening NUMERIC(12,2);
+  v_expected NUMERIC(12,2);
+  v_closing NUMERIC(12,2);
+  v_end_date TIMESTAMPTZ;
+  v_serie TEXT;
+  v_n INT := 1;
+BEGIN
+  FOR r_box IN
+    SELECT b.id, b.serie, b.user_id, b.start_date
+    FROM "box_open" b
+    WHERE b.status = 'abierto' AND b.serie LIKE 'CAJ-%'
+    ORDER BY b.serie
+  LOOP
+    v_end_date := r_box.start_date + INTERVAL '9 hours';
+    v_serie := 'CIE-' || LPAD(v_n::TEXT, 6, '0');
+    v_n := v_n + 1;
 
--- Ajuste de secuencias (importante para que los próximos INSERT no fallen por PK)
-SELECT setval(pg_get_serial_sequence('"role"', 'id'), (SELECT MAX(id) FROM "role"));
-SELECT setval(pg_get_serial_sequence('"user"', 'id'), (SELECT MAX(id) FROM "user"));
-SELECT setval(pg_get_serial_sequence('"user_role"', 'id'), (SELECT MAX(id) FROM "user_role"));
-SELECT setval(pg_get_serial_sequence('"category"', 'id'), (SELECT MAX(id) FROM "category"));
-SELECT setval(pg_get_serial_sequence('"supplier"', 'id'), (SELECT MAX(id) FROM "supplier"));
-SELECT setval(pg_get_serial_sequence('"customer"', 'id'), (SELECT MAX(id) FROM "customer"));
-SELECT setval(pg_get_serial_sequence('"product"', 'id'), (SELECT MAX(id) FROM "product"));
-SELECT setval(pg_get_serial_sequence('"product_price"', 'id'), (SELECT MAX(id) FROM "product_price"));
-SELECT setval(pg_get_serial_sequence('"product_stock"', 'id'), (SELECT MAX(id) FROM "product_stock"));
-SELECT setval(pg_get_serial_sequence('"order_purchase"', 'id'), (SELECT MAX(id) FROM "order_purchase"));
-SELECT setval(pg_get_serial_sequence('"detail_order_purchase"', 'id'), (SELECT MAX(id) FROM "detail_order_purchase"));
-SELECT setval(pg_get_serial_sequence('"receipt_purchase"', 'id'), (SELECT MAX(id) FROM "receipt_purchase"));
-SELECT setval(pg_get_serial_sequence('"detail_receipt_purchase"', 'id'), (SELECT MAX(id) FROM "detail_receipt_purchase"));
-SELECT setval(pg_get_serial_sequence('"kardex"', 'id'), (SELECT MAX(id) FROM "kardex"));
-SELECT setval(pg_get_serial_sequence('"box_open"', 'id'), (SELECT MAX(id) FROM "box_open"));
-SELECT setval(pg_get_serial_sequence('"detail_box_open"', 'id'), (SELECT MAX(id) FROM "detail_box_open"));
-SELECT setval(pg_get_serial_sequence('"box_closed"', 'id'), (SELECT MAX(id) FROM "box_closed"));
-SELECT setval(pg_get_serial_sequence('"detail_box_closed"', 'id'), (SELECT MAX(id) FROM "detail_box_closed"));
-SELECT setval(pg_get_serial_sequence('"sale"', 'id'), (SELECT MAX(id) FROM "sale"));
-SELECT setval(pg_get_serial_sequence('"detail_sale"', 'id'), (SELECT MAX(id) FROM "detail_sale"));
-SELECT setval(pg_get_serial_sequence('"sale_payment"', 'id'), (SELECT MAX(id) FROM "sale_payment"));
-SELECT setval(pg_get_serial_sequence('"stock_adjustment"', 'id'), (SELECT MAX(id) FROM "stock_adjustment"));
-SELECT setval(pg_get_serial_sequence('"detail_stock_adjustment"', 'id'), (SELECT MAX(id) FROM "detail_stock_adjustment"));
+    INSERT INTO "box_closed" (
+      "serie", "user_id", "box_open_id", "start_date", "end_date",
+      "status", "notes", "created_at", "updated_at"
+    ) VALUES (
+      v_serie, r_box.user_id, r_box.id, r_box.start_date, v_end_date,
+      'cerrado', 'Cierre automático – conciliación exacta', NOW(), NOW()
+    ) RETURNING id INTO v_closed_id;
+
+    FOR r_pay IN SELECT id, name FROM "payment" WHERE deleted_at IS NULL LOOP
+      SELECT COALESCE(SUM(opening_amount), 0) INTO v_opening
+      FROM "detail_box_open"
+      WHERE box_open_id = r_box.id AND mode_payment = r_pay.id;
+
+      SELECT COALESCE(SUM(sp.amount), 0) INTO v_expected
+      FROM "sale_payment" sp
+      WHERE sp.box_open_id = r_box.id AND sp.payment_id = r_pay.id;
+
+      v_expected := ROUND(v_opening + v_expected, 2);
+      v_closing := v_expected;
+
+      IF v_opening <> 0 OR v_expected <> 0 THEN
+        INSERT INTO "detail_box_closed" (
+          "box_closed_id", "mode_payment", "mode_payment_name",
+          "opening_amount", "expected_amount", "closing_amount", "difference_amount",
+          "created_at", "updated_at"
+        ) VALUES (
+          v_closed_id, r_pay.id, r_pay.name,
+          v_opening, v_expected, v_closing, 0,
+          NOW(), NOW()
+        );
+      END IF;
+    END LOOP;
+
+    UPDATE "box_open"
+    SET status = 'cerrado', end_date = v_end_date, updated_at = NOW()
+    WHERE id = r_box.id;
+  END LOOP;
+END $$;
+
+-- -----------------------------------------------------------------------------
+-- 14. RESUMEN FINAL
+-- -----------------------------------------------------------------------------
+DO $$
+DECLARE
+  v_sales INT;
+  v_nc INT;
+  v_boxes INT;
+  v_kardex INT;
+  v_mermas INT;
+BEGIN
+  SELECT COUNT(*) INTO v_sales FROM "sale" WHERE is_return = false;
+  SELECT COUNT(*) INTO v_nc FROM "sale" WHERE is_return = true;
+  SELECT COUNT(*) INTO v_boxes FROM "box_closed";
+  SELECT COUNT(*) INTO v_kardex FROM "kardex";
+  SELECT COUNT(*) INTO v_mermas FROM "stock_adjustment";
+
+  RAISE NOTICE '══════════════════════════════════════════════════';
+  RAISE NOTICE ' RESUMEN SEED SQL';
+  RAISE NOTICE '══════════════════════════════════════════════════';
+  RAISE NOTICE 'Ventas (boletas/facturas): %', v_sales;
+  RAISE NOTICE 'Notas de Crédito:          %', v_nc;
+  RAISE NOTICE 'Cajas cerradas:            %', v_boxes;
+  RAISE NOTICE 'Movimientos Kardex:        %', v_kardex;
+  RAISE NOTICE 'Mermas registradas:        %', v_mermas;
+  RAISE NOTICE '══════════════════════════════════════════════════';
+END $$;
 
 COMMIT;
