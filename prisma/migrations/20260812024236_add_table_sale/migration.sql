@@ -56,6 +56,7 @@ CREATE TABLE "detail_sale" (
     "product_id" INTEGER NOT NULL,
     "product_name" TEXT NOT NULL,
     "qty" INTEGER NOT NULL,
+    "valuation_rate" DECIMAL(12,2) NOT NULL,
     "price" DECIMAL(12,2) NOT NULL,
     "subtotal" DECIMAL(12,2) NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

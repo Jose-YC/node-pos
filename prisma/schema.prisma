@@ -465,6 +465,7 @@ model detail_sale {
   product_id          Int
   product_name        String
   qty                 Int
+  valuation_rate      Decimal @db.Decimal(12, 2)
   price               Decimal @db.Decimal(12, 2)
   subtotal            Decimal @db.Decimal(12, 2)
 

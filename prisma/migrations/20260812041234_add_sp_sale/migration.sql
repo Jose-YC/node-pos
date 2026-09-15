@@ -224,12 +224,13 @@ BEGIN
     ) RETURNING id INTO v_sale_id;
 
 	-- insertar detalle sale
-    INSERT INTO detail_sale (sale_id, product_id, product_name, qty, price, subtotal, updated_at)
+    INSERT INTO detail_sale (sale_id, product_id, product_name, qty, valuation_rate, price, subtotal, updated_at)
     SELECT
         v_sale_id,
         product_id,
         product_name,
         qty,
+        valuation_rate,
         price,
         subtotal,
         NOW()
@@ -361,11 +362,12 @@ BEGIN
         returned_qty    INTEGER,
         qty             INTEGER,
         price           NUMERIC(12,2),
-        subtotal        NUMERIC(12,2)
+        subtotal        NUMERIC(12,2),
+        valuation_rate  NUMERIC(12,2)
     ) ON COMMIT DROP;
 
     -- rellenar tabla temmporal con productos
-    INSERT INTO "tmp_sale_return_items" (product_id, product_name, sale_qty, returned_qty, qty, price, subtotal)
+    INSERT INTO "tmp_sale_return_items" (product_id, product_name, sale_qty, returned_qty, qty, price, subtotal, valuation_rate)
     WITH 
         items_product AS (
             SELECT 
@@ -378,7 +380,8 @@ BEGIN
                 DS.product_id,
                 DS.qty AS sale_qty,
                 DS.product_name,
-                DS.price
+                DS.price,
+                DS.valuation_rate
             FROM "items_product" AS IP
             INNER JOIN "detail_sale" AS DS ON IP.product_id = DS.product_id
             WHERE DS.sale_id = p_sale_id
@@ -400,7 +403,8 @@ BEGIN
         COALESCE(PR.returned_qty, 0) AS returned_qty,
         IP.qty,
         PS.price,
-        ROUND(IP.qty * PS.price, 2) AS subtotal
+        ROUND(IP.qty * PS.price, 2) AS subtotal,
+        PS.valuation_rate
     FROM items_product AS IP
     LEFT JOIN products_sale AS PS ON PS.product_id = IP.product_id
     LEFT JOIN products_returned AS PR ON PR.product_id = PS.product_id;
@@ -485,7 +489,7 @@ BEGIN
     RETURNING id INTO v_sale_return_id;
 
     -- insertar detalle sale return
-    INSERT INTO detail_sale (sale_id, product_id, product_name, qty, price, subtotal, updated_at)
+    INSERT INTO detail_sale (sale_id, product_id, product_name, qty, price, subtotal, valuation_rate, updated_at)
     SELECT
         v_sale_return_id,
         product_id,
@@ -493,6 +497,7 @@ BEGIN
         qty,
         price,
         subtotal,
+        valuation_rate,
         NOW()
     FROM "tmp_sale_return_items";
 
@@ -540,9 +545,9 @@ BEGIN
         v_serie,
         PS.stock - TSRI.qty,
         PS.stock,
-        PS.valuation_rate,
+        TSRI.valuation_rate,
         0,
-        PS.valuation_rate,
+        TSRI.valuation_rate,
         PS.stock_value,
         NOW(),
         NOW()
