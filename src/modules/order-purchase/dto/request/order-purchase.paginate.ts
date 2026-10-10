@@ -13,8 +13,8 @@ export class OrderPurchasePaginateDto extends PaginateDto {
 
     static create(object:{[key:string]:any}): OrderPurchasePaginateDto {
         
-        const { page, lim, search } = ZodAdapter.validate<PaginateOrderPurchaseInput>(PaginateOrderPurchaseSchema, object);
+        const { page, limit, search } = ZodAdapter.validate<PaginateOrderPurchaseInput>(PaginateOrderPurchaseSchema, object);
 
-        return new OrderPurchasePaginateDto(page, lim, search);
+        return new OrderPurchasePaginateDto(page, limit, search);
     }
 }

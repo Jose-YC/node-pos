@@ -13,8 +13,8 @@ export class RolePaginateDto extends PaginateDto {
 
     static create(object:{[key:string]:any}): RolePaginateDto {
         
-        const { page, lim, search } = ZodAdapter.validate<PaginateRolesInput>(PaginateRolesSchema, object);
+        const { page, limit, search } = ZodAdapter.validate<PaginateRolesInput>(PaginateRolesSchema, object);
 
-        return new RolePaginateDto(page, lim, search?.trim().toLowerCase());
+        return new RolePaginateDto(page, limit, search?.trim().toLowerCase());
     }
 }

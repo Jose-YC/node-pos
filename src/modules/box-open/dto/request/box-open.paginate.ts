@@ -13,8 +13,8 @@ export class BoxOpenPaginateDto extends PaginateDto {
 
     static create(object:{[key:string]:any}): BoxOpenPaginateDto {
         
-        const { page, lim, search } = ZodAdapter.validate<PaginateBoxOpenInput>(PaginateBoxOpenSchema, object);
+        const { page, limit, search } = ZodAdapter.validate<PaginateBoxOpenInput>(PaginateBoxOpenSchema, object);
 
-        return new BoxOpenPaginateDto(page, lim, search?.trim().toLowerCase());
+        return new BoxOpenPaginateDto(page, limit, search?.trim().toLowerCase());
     }
 }

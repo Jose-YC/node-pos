@@ -3,7 +3,7 @@ export abstract class PaginateDto {
 
     protected constructor(
         public page:number,
-        public lim:number,
+        public limit:number,
         public search?:string,
     ){}
 }

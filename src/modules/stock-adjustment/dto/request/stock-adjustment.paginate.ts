@@ -13,8 +13,8 @@ export class StockAdjustmentPaginateDto extends PaginateDto {
 
     static create(object:{[key:string]:any}): StockAdjustmentPaginateDto {
         
-        const { page, lim, search } = ZodAdapter.validate<PaginateStockAdjustmentInput>(PaginateStockAdjustmentSchema, object);
+        const { page, limit, search } = ZodAdapter.validate<PaginateStockAdjustmentInput>(PaginateStockAdjustmentSchema, object);
 
-        return new StockAdjustmentPaginateDto(page, lim, search?.trim().toLowerCase());
+        return new StockAdjustmentPaginateDto(page, limit, search?.trim().toLowerCase());
     }
 }

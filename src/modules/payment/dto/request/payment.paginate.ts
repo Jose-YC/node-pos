@@ -13,8 +13,8 @@ export class PaymentPaginateDto extends PaginateDto {
 
     static create(object:{[key:string]:any}): PaymentPaginateDto {
         
-        const { page, lim, search } = ZodAdapter.validate<PaginatePaymentInput>(PaginatePaymentSchema, object);
+        const { page, limit, search } = ZodAdapter.validate<PaginatePaymentInput>(PaginatePaymentSchema, object);
 
-        return new PaymentPaginateDto(page, lim, search?.trim().toLowerCase());
+        return new PaymentPaginateDto(page, limit, search?.trim().toLowerCase());
     }
 }

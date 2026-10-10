@@ -14,8 +14,8 @@ export class CatalogProductPaginateDto extends PaginateDto {
 
     static create(object:{[key:string]:any}): CatalogProductPaginateDto {
         
-        const { page, lim, search, category } = ZodAdapter.validate<PaginateCatalogProductInput>(PaginateCatalogProductSchema, object);
+        const { page, limit, search, category } = ZodAdapter.validate<PaginateCatalogProductInput>(PaginateCatalogProductSchema, object);
 
-        return new CatalogProductPaginateDto(page, lim, search?.trim().toLowerCase(), category);
+        return new CatalogProductPaginateDto(page, limit, search?.trim().toLowerCase(), category);
     }
 }

@@ -14,8 +14,8 @@ export class SalePaginateDto extends PaginateDto {
 
     static create(object:{[key:string]:any}): SalePaginateDto {
         
-        const { page, lim, search, userid } = ZodAdapter.validate<PaginateSaleInput>(PaginateSaleSchema, object);
+        const { page, limit, search, userid } = ZodAdapter.validate<PaginateSaleInput>(PaginateSaleSchema, object);
 
-        return new SalePaginateDto(page, lim, search?.trim().toLowerCase(), userid);
+        return new SalePaginateDto(page, limit, search?.trim().toLowerCase(), userid);
     }
 }

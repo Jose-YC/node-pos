@@ -13,8 +13,8 @@ export class CategoryPaginateDto extends PaginateDto {
 
     static create(object:{[key:string]:any}): CategoryPaginateDto {
         
-        const { page, lim, search } = ZodAdapter.validate<PaginateCategoryInput>(PaginateCategorySchema, object);
+        const { page, limit, search } = ZodAdapter.validate<PaginateCategoryInput>(PaginateCategorySchema, object);
 
-        return new CategoryPaginateDto(page, lim, search?.trim().toLowerCase());
+        return new CategoryPaginateDto(page, limit, search?.trim().toLowerCase());
     }
 }

@@ -13,8 +13,8 @@ export class CustomerPaginateDto extends PaginateDto {
 
     static create(object:{[key:string]:any}): CustomerPaginateDto {
         
-        const { page, lim, search } = ZodAdapter.validate<PaginateCustomerInput>(PaginateCustomerSchema, object);
+        const { page, limit, search } = ZodAdapter.validate<PaginateCustomerInput>(PaginateCustomerSchema, object);
 
-        return new CustomerPaginateDto(page, lim, search?.trim().toLowerCase());
+        return new CustomerPaginateDto(page, limit, search?.trim().toLowerCase());
     }
 }
