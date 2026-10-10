@@ -24,7 +24,7 @@ export class PermissionDatasource {
 
             prisma.$queryRaw<PermissionRaw[]>`SELECT * FROM fc_ListPermissions(
                 page := ${paginate.page}::integer,
-                lim := ${paginate.lim}::integer,
+                lim := ${paginate.limit}::integer,
                 search := ${paginate.search}::TEXT
             );`
         ]);
@@ -40,7 +40,8 @@ export class PermissionDatasource {
             select: {
                 id: true,
                 name: true,
-                module: true
+                module: true,
+                description: true,
             },
             where: {
                 id, 
