@@ -1,8 +1,8 @@
 -- =============================================================================
 -- db-seed.sql  |  Seed DETERMINISTA – Tienda Cosméticos Perú
--- 30 cierres de caja × 30 ventas | IGV 18% | Alineado al schema actual
+-- 30 cierres × 30 ventas | IGV 18% | detail_sale.valuation_rate incluido
 -- =============================================================================
--- PRE-REQUISITOS (deben existir):
+-- PRE-REQUISITOS:
 --   identity_document_type, permission, payment, type_document_sale, reason,
 --   customer genérico (is_generic = true)
 -- =============================================================================
@@ -49,7 +49,7 @@ WHERE (u.email = 'carlos.mendoza@tienda.com' AND r.name = 'Administrador')
 ON CONFLICT (user_id, role_id) DO NOTHING;
 
 -- -----------------------------------------------------------------------------
--- 4. ROLE_PERMISSION – Administrador (todos)
+-- 4. ROLE_PERMISSION – Administrador
 -- -----------------------------------------------------------------------------
 INSERT INTO "role_permission" ("role_id", "permission_id", "created_at")
 SELECT r.id, p.id, NOW()
@@ -136,13 +136,12 @@ INSERT INTO "product" (
 )
 SELECT
   pd.sku, pd.name, pd.description,
-  'https://cdn.belleza.pe/products/' || lower(pd.sku) || '.jpg',
+  'https://cdn.tienda.com/products/' || lower(pd.sku) || '.jpg',
   1, pd.min_stock, true, c.id, NOW(), NOW()
 FROM prod_data pd
 JOIN cats c ON c.name = pd.category_name
 WHERE NOT EXISTS (SELECT 1 FROM "product" p WHERE p.sku = pd.sku AND p.deleted_at IS NULL);
 
--- Precios VENTA
 INSERT INTO "product_price" (
   "product_id", "product_name", "product_description",
   "buying", "selling", "amount", "created_at", "updated_at"
@@ -163,7 +162,6 @@ WHERE NOT EXISTS (
   WHERE pp.product_id = p.id AND pp.selling = true AND pp.deleted_at IS NULL
 );
 
--- Precios COMPRA
 INSERT INTO "product_price" (
   "product_id", "product_name", "product_description",
   "buying", "selling", "amount", "created_at", "updated_at"
@@ -184,7 +182,6 @@ WHERE NOT EXISTS (
   WHERE pp.product_id = p.id AND pp.buying = true AND pp.deleted_at IS NULL
 );
 
--- Stock inicial
 INSERT INTO "product_stock" (
   "product_id", "stock", "valuation_rate", "stock_value", "created_at", "updated_at"
 )
@@ -287,7 +284,7 @@ JOIN "payment" pay ON pay.type = 'cash' AND pay.deleted_at IS NULL
 WHERE NOT EXISTS (SELECT 1 FROM "detail_box_open" d WHERE d.box_open_id = b.id);
 
 -- -----------------------------------------------------------------------------
--- 10. VENTAS (30 por caja) + DETALLE + PAGO + KARDEX
+-- 10. VENTAS (30 por caja) + DETALLE (con valuation_rate) + PAGO + KARDEX
 -- -----------------------------------------------------------------------------
 DO $$
 DECLARE
@@ -419,7 +416,7 @@ BEGIN
         0.18, v_taxable, v_igv, v_total, v_paid, v_change, false, NULL, NOW(), NOW()
       ) RETURNING id INTO v_sale_id;
 
-      -- Línea 1
+      -- Línea 1 (incluye valuation_rate)
       SELECT p.id, p.name, pp.amount INTO v_product_id, v_product_name, v_price
       FROM "product" p
       JOIN "product_price" pp ON pp.product_id = p.id AND pp.selling = true AND pp.deleted_at IS NULL
@@ -427,12 +424,15 @@ BEGIN
       v_qty := 1 + ((v_shift_idx + v_sale_idx) % 2);
       v_subtotal := ROUND(v_price * v_qty, 2);
 
-      INSERT INTO "detail_sale" ("sale_id","product_id","product_name","qty","price","subtotal","created_at","updated_at")
-      VALUES (v_sale_id, v_product_id, v_product_name, v_qty, v_price, v_subtotal, NOW(), NOW());
-
       SELECT stock, valuation_rate INTO v_stock_before, v_valuation
       FROM "product_stock" WHERE product_id = v_product_id AND deleted_at IS NULL LIMIT 1;
       v_stock_after := GREATEST(0, v_stock_before - v_qty);
+
+      INSERT INTO "detail_sale" (
+        "sale_id","product_id","product_name","qty","valuation_rate","price","subtotal","created_at","updated_at"
+      ) VALUES (
+        v_sale_id, v_product_id, v_product_name, v_qty, v_valuation, v_price, v_subtotal, NOW(), NOW()
+      );
 
       INSERT INTO "kardex" (
         "kardex_date","product_id","type","doc_id","doc_type","doc_serie",
@@ -447,7 +447,7 @@ BEGIN
       SET stock = v_stock_after, stock_value = ROUND(v_valuation * v_stock_after, 2), updated_at = NOW()
       WHERE product_id = v_product_id AND deleted_at IS NULL;
 
-      -- Línea 2
+      -- Línea 2 (incluye valuation_rate)
       SELECT p.id, p.name, pp.amount INTO v_product_id, v_product_name, v_price
       FROM "product" p
       JOIN "product_price" pp ON pp.product_id = p.id AND pp.selling = true AND pp.deleted_at IS NULL
@@ -455,12 +455,15 @@ BEGIN
       v_qty := 1;
       v_subtotal := ROUND(v_price * v_qty, 2);
 
-      INSERT INTO "detail_sale" ("sale_id","product_id","product_name","qty","price","subtotal","created_at","updated_at")
-      VALUES (v_sale_id, v_product_id, v_product_name, v_qty, v_price, v_subtotal, NOW(), NOW());
-
       SELECT stock, valuation_rate INTO v_stock_before, v_valuation
       FROM "product_stock" WHERE product_id = v_product_id AND deleted_at IS NULL LIMIT 1;
       v_stock_after := GREATEST(0, v_stock_before - v_qty);
+
+      INSERT INTO "detail_sale" (
+        "sale_id","product_id","product_name","qty","valuation_rate","price","subtotal","created_at","updated_at"
+      ) VALUES (
+        v_sale_id, v_product_id, v_product_name, v_qty, v_valuation, v_price, v_subtotal, NOW(), NOW()
+      );
 
       INSERT INTO "kardex" (
         "kardex_date","product_id","type","doc_id","doc_type","doc_serie",
@@ -482,7 +485,7 @@ BEGIN
 END $$;
 
 -- -----------------------------------------------------------------------------
--- 11. NOTAS DE CRÉDITO
+-- 11. NOTAS DE CRÉDITO (con valuation_rate en detail_sale)
 -- -----------------------------------------------------------------------------
 DO $$
 DECLARE
@@ -514,8 +517,8 @@ BEGIN
     SELECT s.* INTO r_sale FROM "sale" s WHERE s.serie = v_s AND s.is_return = false LIMIT 1;
     IF NOT FOUND THEN CONTINUE; END IF;
 
-    SELECT ds.product_id, ds.product_name, ds.price, 1
-    INTO v_product_id, v_product_name, v_price, v_qty
+    SELECT ds.product_id, ds.product_name, ds.price, ds.valuation_rate, 1
+    INTO v_product_id, v_product_name, v_price, v_valuation, v_qty
     FROM "detail_sale" ds WHERE ds.sale_id = r_sale.id ORDER BY ds.id LIMIT 1;
     IF NOT FOUND THEN CONTINUE; END IF;
 
@@ -542,8 +545,11 @@ BEGIN
       0.18, v_taxable, v_igv, v_return_total, v_return_total, 0, true, r_sale.id, NOW(), NOW()
     ) RETURNING id INTO v_nc_id;
 
-    INSERT INTO "detail_sale" ("sale_id","product_id","product_name","qty","price","subtotal","created_at","updated_at")
-    VALUES (v_nc_id, v_product_id, v_product_name, v_qty, v_price, v_subtotal, NOW(), NOW());
+    INSERT INTO "detail_sale" (
+      "sale_id","product_id","product_name","qty","valuation_rate","price","subtotal","created_at","updated_at"
+    ) VALUES (
+      v_nc_id, v_product_id, v_product_name, v_qty, v_valuation, v_price, v_subtotal, NOW(), NOW()
+    );
 
     INSERT INTO "sale_payment" ("sale_id","box_open_id","payment_id","payment_name","amount","created_at","updated_at")
     VALUES (v_nc_id, r_sale.box_open_id, v_payment_id, v_payment_name, -v_return_total, NOW(), NOW());
