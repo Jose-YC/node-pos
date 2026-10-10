@@ -22,7 +22,8 @@ AS $$
 		OR name ILIKE '%' || search || '%'
 		OR module ILIKE '%' || search || '%'
 	)
-	ORDER BY module, name
+	GROUP BY id, name, module
+	ORDER BY created_at DESC
 	LIMIT lim
 	OFFSET (page - 1) * lim;
 $$;
