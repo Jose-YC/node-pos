@@ -10,7 +10,7 @@ export class RoleController {
         const create = CreateRoleRequestDto.create(req.body);
 
         new CreateRolUsecase().execute(create)
-        .then((status) => res.status(201).json({ status, code: 201, message: 'ok' }))
+        .then((data) => res.status(200).json({ status: true, code: 200, message: 'ok', data }))
         .catch((err) => errorHandler(err, res));
     })
 
@@ -37,7 +37,7 @@ export class RoleController {
         const update = UpdateRoleRequestDto.create({...req.body, id});
 
         new UpdateRolUsecase().execute(update)
-        .then((status) => res.status(200).json({ status, code: 200, message: 'ok' }))
+        .then((data) => res.status(200).json({ status: true, code: 200, message: 'ok', data }))
         .catch((err) => errorHandler(err, res));
     })
 
@@ -46,7 +46,7 @@ export class RoleController {
         if (!id) throw CustomError.badRequest('Missing id');
 
         new DeleteRolUsecase().execute(id)
-        .then((status) => res.status(200).json({ status, code: 200, message: 'ok' }))
+        .then((data) => res.status(200).json({ status: true, code: 200, message: 'ok', data }))
         .catch((err) => errorHandler(err, res));
     })
 }
