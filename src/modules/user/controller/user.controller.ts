@@ -19,7 +19,7 @@ export class UserController {
 
     new CreateUserUsecase()
       .execute(create)
-      .then((status) => res.status(201).json({ status, code: 201, message: 'ok' }))
+      .then((data) => res.status(200).json({ status: true, code: 200, message: 'ok', data }))
       .catch((err) => errorHandler(err, res));
   });
 
@@ -49,7 +49,7 @@ export class UserController {
 
     new UpdateUserUsecase()
       .execute(update)
-      .then((status) => res.status(200).json({ status, code: 200, message: 'ok' }))
+      .then((data) => res.status(200).json({ status: true, code: 200, message: 'ok', data }))
       .catch((err) => errorHandler(err, res));
   });
 
@@ -75,7 +75,7 @@ export class UserController {
 
     new ProfileUserUsecase()
       .execute(updateProfile)
-      .then((status) => res.status(200).json({ status, code: 200, message: 'ok' }))
+      .then((data) => res.status(200).json({ status: true, code: 200, message: 'ok', data }))
       .catch((err) => errorHandler(err, res));
   });
 
@@ -87,7 +87,7 @@ export class UserController {
 
     new ImageUserUsecase()
       .execute(updateImage)
-      .then((status) => res.status(200).json({ status, code: 200, message: 'ok' }))
+      .then((data) => res.status(200).json({ status: true, code: 200, message: 'ok', data }))
       .catch((err) => errorHandler(err, res));
   });
 
@@ -99,7 +99,7 @@ export class UserController {
 
     new UpdatePasswordUserUsecase()
       .execute(updatePassword)
-      .then((status) => res.status(200).json({ status, code: 200, message: 'ok' }))
+      .then((data) => res.status(200).json({ status: true, code: 200, message: 'ok', data }))
       .catch((err) => errorHandler(err, res));
   });
 
@@ -109,7 +109,7 @@ export class UserController {
 
     new DeleteUserUsecase()
       .execute(id)
-      .then((status) => res.status(200).json({ status, code: 200, message: 'ok' }))
+      .then((data) => res.status(200).json({ status: true, code: 200, message: 'ok', data }))
       .catch((err) => errorHandler(err, res));
   });
 }
