@@ -1,18 +1,21 @@
 import { z } from 'zod';
-import { numberField, stringField, BasePaginateSchema } from '../../../shared';
+import { BasePaginateSchema } from '../../../shared';
 
 export const CreatePermissionSchema = z.object({
-    name: stringField().toLowerCase(),
-    module: stringField(),
+    name: z.string('debe ser una cadena de texto').trim().min(1, 'no puede estar vacío').toLowerCase(),
+    module: z.string('debe ser una cadena de texto').trim().min(1, 'no puede estar vacío').toUpperCase(),
+    description: z.string('debe ser una cadena de texto').trim().min(1, 'no puede estar vacío').optional(),
 });
 
 export const UpdatePermissionSchema = z.object({
-    id: numberField().positive('must be a positive integer'),
-    name: stringField().optional(),
-    module: stringField().optional(),
+    id: z.number('debe ser un numero').int('no debe tener decimales').positive('debe ser un número entero positivo'),
+    name: z.string('debe ser una cadena de texto').trim().min(1, 'no puede estar vacío').toLowerCase().optional(),
+    module: z.string('debe ser una cadena de texto').trim().min(1, 'no puede estar vacío').toUpperCase().optional(),
+    description: z.string('debe ser una cadena de texto').trim().min(1, 'no puede estar vacío').optional(),
+
 }).refine(
-    (data) => data.name !== undefined || data.module !== undefined,
-    'At least one of name or module must be provided'
+    (data) => data.name !== undefined || data.module !== undefined || data.description !== undefined,
+    'At least one of name, module, or description must be provided'
 );
 
 export const PaginatePermissionSchema = BasePaginateSchema;

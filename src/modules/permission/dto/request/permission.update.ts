@@ -7,19 +7,21 @@ export class UpdatePermissionRequestDto {
         public readonly id:number,
         public readonly name?:string,
         public readonly module?:string,
+        public readonly description?:string,
     ){}
 
     get values(){
         const returnObj: {[key:string]: any}={}
         if (this.name) returnObj.name=this.name;
         if (this.module) returnObj.module=this.module;
+        if (this.description) returnObj.description=this.description;
         return returnObj;
     }
 
     static create(props: {[key:string]:any}): UpdatePermissionRequestDto{
         
-        const { id, name, module } = ZodAdapter.validate<UpdatePermissionInput>(UpdatePermissionSchema, {...props, id: Number(props.id) });
+        const { id, name, module, description } = ZodAdapter.validate<UpdatePermissionInput>(UpdatePermissionSchema, {...props, id: Number(props.id) });
         
-        return new UpdatePermissionRequestDto(id, name?.trim().toLowerCase(), module?.trim());
+        return new UpdatePermissionRequestDto(id, name, module, description);
     }
 }

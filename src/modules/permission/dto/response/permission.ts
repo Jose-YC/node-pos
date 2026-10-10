@@ -4,5 +4,6 @@ export class PermissionResponseDto {
         public id:number,
         public name:string,
         public module:string,
+        public description?:string,
     ){}
 }
