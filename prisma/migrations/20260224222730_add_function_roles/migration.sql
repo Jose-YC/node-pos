@@ -5,8 +5,7 @@ CREATE OR REPLACE FUNCTION fc_ListRoles(
 )
 RETURNS TABLE (
     id          INTEGER,
-    name        VARCHAR(100),
-    description TEXT,           
+    name        VARCHAR(100),      
     permissions INTEGER          
 )
 LANGUAGE sql
@@ -14,7 +13,6 @@ AS $$
     SELECT
         R.id,                   
         R.name,
-        R.description,
         COUNT(RP.permission_id) AS permissions
     FROM role AS R
     LEFT JOIN role_permission AS RP
@@ -22,7 +20,7 @@ AS $$
     WHERE
         R.deleted_at IS NULL
         AND ( p_search IS NULL OR R.name ILIKE '%' || p_search || '%' )
-    GROUP BY R.id, R.name, R.description, R.created_at
+    GROUP BY R.id, R.name, R.created_at
     ORDER BY R.created_at DESC
     LIMIT  p_limit
     OFFSET (p_page - 1) * p_limit; 

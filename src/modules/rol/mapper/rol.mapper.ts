@@ -8,7 +8,6 @@ export class RoleMapper {
     return {
       id: role.id,
       name: role.name.trim().toLowerCase(),
-      description: role.description?.trim(),
       count_permissions: Number(role.permissions) || 0,
     };
   }
