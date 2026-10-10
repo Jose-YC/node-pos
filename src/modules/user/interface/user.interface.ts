@@ -9,6 +9,7 @@ export interface UserByIdRaw extends UserRaw {
   roles: { id: number; name: string }[];
 }
 
-export interface UserPermissionsByIdRaw extends UserRaw {
+export interface UserPermissionsByIdRaw {
+  id: number;
   permissions: string[];
 }

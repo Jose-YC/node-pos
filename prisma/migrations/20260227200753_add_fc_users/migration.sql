@@ -84,8 +84,6 @@ CREATE OR REPLACE FUNCTION fc_UserPermissionsById(
 )
 RETURNS TABLE (
     id             	INTEGER,
-    name           	VARCHAR,
-    email    	   	TEXT,
     permissions     TEXT[]
 )
 LANGUAGE sql
@@ -93,8 +91,6 @@ ROWS 1
 AS $$
 	SELECT 
 	  u.id,
-	  u.name,
-	  u.email,
 	  COALESCE(
         ARRAY_AGG(P.name) FILTER (WHERE P.id IS NOT NULL),
         ARRAY[]::TEXT[]
@@ -105,5 +101,5 @@ AS $$
     LEFT JOIN role_permission AS RP ON R.id = RP.role_id AND RP.deleted_at IS NULL
     LEFT JOIN permission AS P ON RP.permission_id = P.id AND P.deleted_at IS NULL
     WHERE U.id =  p_user_id AND U.deleted_at IS NULL
-	GROUP BY u.id, u.name, u.email;
+	GROUP BY u.id;
 $$;

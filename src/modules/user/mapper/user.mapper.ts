@@ -36,8 +36,6 @@ export class UserMapper {
     static toPermissionsDto(user: UserPermissionsByIdRaw): UserPermissionsResponseDto {
         return {
             id: user.id,
-            email: user.email.trim(),
-            name: user.name.trim(),
             permissions: Array.isArray(user.permissions)
                 ? user.permissions.filter((p) => typeof p === 'string')
                 : [],
