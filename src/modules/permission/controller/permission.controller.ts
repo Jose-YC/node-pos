@@ -9,14 +9,14 @@ export class PermissionController {
         const create = CreatePermissionRequestDto.create(req.body);
 
         new CreatePermissionUsecase().execute(create)
-        .then((status) => res.status(201).json({ status, code: 201, message: 'ok' }))
+        .then((data) => res.status(201).json({ status:true, code: 201, message: 'ok', data }))
         .catch((err) => errorHandler(err, res));
 
     })
 
     public get = catchAsync((req:Request, res:Response) =>  {
-        const {  page = 1, lim = 5, search } = req.query;
-        const paginate = PermissionPaginateDto.create( {page: +page, lim: +lim, search});
+        const {  page = 1, limit = 5, search } = req.query;
+        const paginate = PermissionPaginateDto.create( {page: +page, limit: +limit, search});
 
         new ListPermissionUsecase().execute(paginate)
         .then((data) => res.status(200).json({ status:true, code: 200, message: 'ok', data }))
@@ -38,7 +38,7 @@ export class PermissionController {
         const update = UpdatePermissionRequestDto.create({...req.body, id: +id});
 
         new UpdatePermissionUsecase().execute(update)
-        .then((status) => res.status(200).json({ status, code: 200, message: 'ok' }))
+        .then((data) => res.status(201).json({ status:true, code: 201, message: 'ok', data }))
         .catch((err) => errorHandler(err, res));
 
     })
@@ -48,7 +48,7 @@ export class PermissionController {
         if (!id) throw CustomError.badRequest('Missing id');
 
         new DeletePermissionUsecase().execute(+id)
-        .then((status) => res.status(200).json({ status, code: 200, message: 'ok' }))
+        .then((data) => res.status(201).json({ status:true, code: 201, message: 'ok', data }))
         .catch((err) => errorHandler(err, res));
 
     })
