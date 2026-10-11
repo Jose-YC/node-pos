@@ -28,6 +28,29 @@ AS $$
 	OFFSET (page - 1) * lim;
 $$;
 
+CREATE OR REPLACE FUNCTION fc_ListOptionsPermissions(
+   lim        INTEGER,
+   search     TEXT DEFAULT NULL
+)
+RETURNS TABLE (
+    id INTEGER,
+    name TEXT
+) 
+LANGUAGE sql
+AS $$
+	SELECT
+	    id,
+	    name
+	FROM permission
+	WHERE deleted_at IS NULL
+	AND (
+		search IS NULL 
+		OR name ILIKE '%' || search || '%'
+	)
+	ORDER BY name ASC, id ASC
+	LIMIT lim;
+$$;
+
 -- funcion para dar el total de permisos.  
 CREATE OR REPLACE FUNCTION fc_CountListPermissions(
    search     TEXT DEFAULT NULL

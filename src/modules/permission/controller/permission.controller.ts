@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
-import { CreatePermissionUsecase, ListPermissionUsecase, ByIdPermissionUsecase, UpdatePermissionUsecase, DeletePermissionUsecase } from "../usecase";
+import { CreatePermissionUsecase, ListPermissionUsecase, ListOptionsPermissionUsecase, ByIdPermissionUsecase, UpdatePermissionUsecase, DeletePermissionUsecase } from "../usecase";
 import { CreatePermissionRequestDto, PermissionPaginateDto, UpdatePermissionRequestDto } from "../dto";
 import { catchAsync, CustomError, errorHandler } from "../../../shared";
+import { PermissionOptionsDto } from "../dto/request/permision.option";
 
 export class PermissionController { 
 
@@ -21,7 +22,15 @@ export class PermissionController {
         new ListPermissionUsecase().execute(paginate)
         .then((data) => res.status(200).json({ status:true, code: 200, message: 'ok', data }))
         .catch((err) => errorHandler(err, res));
+    })
 
+    public options = catchAsync((req:Request, res:Response) =>  {
+        const { search } = req.query;
+        const paginate = PermissionOptionsDto.create( { search });
+
+        new ListOptionsPermissionUsecase().execute(paginate)
+        .then((data) => res.status(200).json({ status:true, code: 200, message: 'ok', data }))
+        .catch((err) => errorHandler(err, res));
     })
 
     public getId = catchAsync((req:Request, res:Response) =>  {

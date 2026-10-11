@@ -1,5 +1,6 @@
-import { PermissionRaw } from "../interface/permission.interface";
+import { PermissionOptionsRaw, PermissionRaw } from "../interface/permission.interface";
 import { PermissionResponseDto } from "../dto";
+import { OptionsDto } from "../../../shared";
 
 export class PermissionMapper {
     static toResponseDto(permission: PermissionRaw): PermissionResponseDto {
@@ -9,6 +10,13 @@ export class PermissionMapper {
         module: permission.module,
         description: permission.description || undefined,  
       };
+    }
+
+    static toResponseOptionsDto(permissions: PermissionOptionsRaw[]): OptionsDto[] {
+        return permissions.map(permission => ({
+            id: permission.id,
+            label: permission.name,
+        }));
     }
 
     static toResponseDtoList(permissions: PermissionRaw[]): PermissionResponseDto[] {

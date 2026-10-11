@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BasePaginateSchema } from '../../../shared';
+import { BaseOptionsSchema, BasePaginateSchema } from '../../../shared';
 
 export const CreatePermissionSchema = z.object({
     name: z.string('debe ser una cadena de texto').trim().min(1, 'no puede estar vacío').toLowerCase(),
@@ -19,7 +19,9 @@ export const UpdatePermissionSchema = z.object({
 );
 
 export const PaginatePermissionSchema = BasePaginateSchema;
+export const OptionsPermissionSchema = BaseOptionsSchema;
 
 export type PaginatePermissionInput = z.infer<typeof PaginatePermissionSchema>;
+export type OptionsPermissionInput = z.infer<typeof OptionsPermissionSchema>;
 export type CreatePermissionInput = z.infer<typeof CreatePermissionSchema>;
 export type UpdatePermissionInput = z.infer<typeof UpdatePermissionSchema>;

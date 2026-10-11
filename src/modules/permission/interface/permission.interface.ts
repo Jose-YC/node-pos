@@ -4,3 +4,8 @@ export interface PermissionRaw {
   module: string;
   description: string | null;
 }
+
+export interface PermissionOptionsRaw {
+  id: number;
+  name: string;
+}
