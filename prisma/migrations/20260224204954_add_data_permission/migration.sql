@@ -19,6 +19,7 @@ VALUES
     -- Roles
     ('roles:create', 'Crear roles', 'roles', NOW()),
     ('roles:read', 'Leer roles', 'roles', NOW()),
+    ('roles:options', 'Mostrar roles para seleccionar', 'roles', NOW()),
     ('roles:byid', 'Leer roles por ID', 'roles', NOW()),
     ('roles:update', 'Actualizar roles', 'roles', NOW()),
     ('roles:delete', 'Eliminar roles', 'roles', NOW()),
@@ -26,6 +27,7 @@ VALUES
     -- Permissions
     ('permissions:create', 'Crear permisos', 'permissions', NOW()),
     ('permissions:read', 'Leer permisos', 'permissions', NOW()),
+    ('permissions:options', 'Mostrar permisos para seleccionar', 'permissions', NOW()),
     ('permissions:byid', 'Leer permisos por ID', 'permissions', NOW()),
     ('permissions:update', 'Actualizar permisos', 'permissions', NOW()),
     ('permissions:delete', 'Eliminar permisos', 'permissions', NOW()),
@@ -33,6 +35,7 @@ VALUES
     -- Categories
     ('categories:create', 'Crear categorías', 'categories', NOW()),
     ('categories:read', 'Leer categorías', 'categories', NOW()),
+    ('categories:options', 'Mostrar categorías para seleccionar', 'categories', NOW()),
     ('categories:byid', 'Leer categorías por ID', 'categories', NOW()),
     ('categories:update', 'Actualizar categorías', 'categories', NOW()),
     ('categories:delete', 'Eliminar categorías', 'categories', NOW()),
