@@ -13,7 +13,7 @@ export class AppRoutes {
         const router = Router();
         router.use('/auth', AuthRoutes.routes);
         router.use('/user', UserRoutes.routes);
-        router.use('/rol', RoleRoutes.routes);
+        router.use('/role', RoleRoutes.routes);
         router.use('/permission', PermissionRoutes.routes);
         router.use('/image', ImageRoutes.routes);
         router.use('/category', CategoryRoutes.routes);
