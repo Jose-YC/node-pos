@@ -16,7 +16,7 @@ export class RoleController {
 
     public get = catchAsync((req:Request, res:Response) =>  {
         const {  page = 0, limit = 5, search } = req.query;
-        const paginate= RolePaginateDto.create( {page: +page, lim: +limit, search});
+        const paginate= RolePaginateDto.create( {page: +page, limit: +limit, search});
 
         new ListRolUsecase().execute(paginate)
         .then((data) => res.status(200).json({ status:true, code: 200, message: 'ok', data }))
