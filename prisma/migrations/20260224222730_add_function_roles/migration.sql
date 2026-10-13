@@ -26,6 +26,27 @@ AS $$
     OFFSET (p_page - 1) * p_limit; 
 $$;
 
+CREATE OR REPLACE FUNCTION fc_ListOptionsRoles(
+    p_limit  INTEGER,           
+    p_search TEXT DEFAULT NULL 
+)
+RETURNS TABLE (
+    id          INTEGER,
+    name        VARCHAR(100),    
+)
+LANGUAGE sql
+AS $$
+    SELECT
+        R.id,                   
+        R.name,
+    FROM role AS R
+    WHERE
+        R.deleted_at IS NULL
+        AND ( p_search IS NULL OR R.name ILIKE '%' || p_search || '%' )
+    ORDER BY R.name ASC, id ASC
+    LIMIT  p_limit 
+$$;
+
 CREATE OR REPLACE FUNCTION fc_CountListRoles(
    p_search     TEXT DEFAULT NULL
 )
