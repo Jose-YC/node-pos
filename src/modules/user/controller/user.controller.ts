@@ -24,8 +24,8 @@ export class UserController {
   });
 
   public get = catchAsync((req: Request, res: Response) => {
-    const { page = 0, lim = 5, search, rol } = req.query;
-    const paginate = UserPaginateDto.create({ page: +page, lim: +lim, search, rol: rol ? +rol : undefined });
+    const { page = 0, limit = 5, search, rol } = req.query;
+    const paginate = UserPaginateDto.create({ page: +page, limit: +limit, search, rol: rol ? +rol : undefined });
 
     new ListUserUsecase()
       .execute(paginate)
