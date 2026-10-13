@@ -12,3 +12,8 @@ export interface RoleByIdRaw {
   description: string | null;
   permissions: PermissionRaw[];
 }
+
+export interface RoleOptionsRaw {
+  id: number;
+  name: string;
+}

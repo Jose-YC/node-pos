@@ -1,6 +1,7 @@
+import { OptionsDto } from "../../../shared";
 import { PermissionMapper } from "../../permission/mapper/permission.mapper";
 import { RoleListItemDto, RoleResponseDto } from "../dto";
-import { RoleRaw, RoleByIdRaw } from "../interface/rol.interface";
+import { RoleRaw, RoleByIdRaw, RoleOptionsRaw } from "../interface/rol.interface";
 
 export class RoleMapper {
 
@@ -11,6 +12,13 @@ export class RoleMapper {
       count_permissions: Number(role.permissions) || 0,
     };
   }
+
+  static toResponseOptionsDto(permissions: RoleOptionsRaw[]): OptionsDto[] {
+      return permissions.map(permission => ({
+          id: permission.id,
+          label: permission.name,
+      }));
+    }
 
   static toListItemDtoArray(roles: RoleRaw[]): RoleListItemDto[] {
     return roles.map(role => this.toListItemDto(role));

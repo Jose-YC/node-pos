@@ -12,6 +12,7 @@ export class RoleRoutes {
         const authMiddleware = new AuthMiddleware();
 
         router.get('/', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['roles:read'])], rol.get);
+        router.get('/options', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['roles:options'])], rol.options);
         router.get('/:id', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['roles:byid'])], rol.getId);
         router.post('/create', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['roles:create'])], rol.post);
         router.patch('/update/:id', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['roles:update'])], rol.put);

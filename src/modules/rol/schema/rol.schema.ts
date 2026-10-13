@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { arrayNumberField, numberField, stringField, BasePaginateSchema } from '../../../shared';
+import { BaseOptionsSchema, BasePaginateSchema } from '../../../shared';
 
 const ArrayPermission = z.array(z.number('debe ser un numero').int('no debe tener decimales').positive('debe ser un entero positivo')).min(2, 'must have at least 2 permissions').refine((items) => new Set(items).size === items.length,'must not contain duplicates')
 
@@ -21,7 +21,9 @@ export const UpdateRoleSchema = z.object({
 );
 
 export const PaginateRolesSchema = BasePaginateSchema;
+export const OptionsRoleSchema = BaseOptionsSchema;
 
 export type PaginateRolesInput = z.infer<typeof PaginateRolesSchema>;
+export type OptionsRoleInput = z.infer<typeof OptionsRoleSchema>;
 export type CreateRoleInput = z.infer<typeof CreateRoleSchema>;
 export type UpdateRoleInput = z.infer<typeof UpdateRoleSchema>;

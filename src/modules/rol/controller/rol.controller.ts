@@ -1,8 +1,9 @@
 import { Response, Request } from 'express'
 
-import { ListRolUsecase, CreateRolUsecase, ByIdRolUsecase, UpdateRolUsecase, DeleteRolUsecase } from '../usecase';
+import { ListRolUsecase, CreateRolUsecase, ByIdRolUsecase, UpdateRolUsecase, DeleteRolUsecase, ListOptionsRoleUsecase } from '../usecase';
 import { catchAsync, CustomError, errorHandler } from '../../../shared';
 import { CreateRoleRequestDto, RolePaginateDto, UpdateRoleRequestDto } from '../dto';
+import { RoleOptionsDto } from '../dto/request/rol.option';
 
 export class RoleController { 
 
@@ -19,6 +20,15 @@ export class RoleController {
         const paginate= RolePaginateDto.create( {page: +page, limit: +limit, search});
 
         new ListRolUsecase().execute(paginate)
+        .then((data) => res.status(200).json({ status:true, code: 200, message: 'ok', data }))
+        .catch((err) => errorHandler(err, res));
+    })
+
+    public options = catchAsync((req:Request, res:Response) =>  {
+        const { search } = req.query;
+        const paginate = RoleOptionsDto.create( { search });
+
+        new ListOptionsRoleUsecase().execute(paginate)
         .then((data) => res.status(200).json({ status:true, code: 200, message: 'ok', data }))
         .catch((err) => errorHandler(err, res));
     })

@@ -1,9 +1,10 @@
 
 import { CreateRoleRequestDto, RoleListItemDto, UpdateRoleRequestDto, RolePaginateDto, RoleResponseDto } from '../dto';
-import { RoleRaw, RoleByIdRaw } from "../interface/rol.interface";
-import { List, CustomError } from '../../../shared';
+import { RoleRaw, RoleByIdRaw, RoleOptionsRaw } from "../interface/rol.interface";
+import { List, CustomError, OptionsDto } from '../../../shared';
 import { RoleMapper } from '../mapper/rol.mapper';  
 import { prisma } from '../../../config';
+import { RoleOptionsDto } from '../dto/request/rol.option';
 
 export class RoleDatasource {
 
@@ -18,6 +19,14 @@ export class RoleDatasource {
         );`;
 
         return !!rol;
+    }
+
+    async options(options: RoleOptionsDto): Promise<OptionsDto[]> {
+        const permissions = await prisma.$queryRaw<RoleOptionsRaw[]>`SELECT * FROM fc_ListOptionsRoles(
+            p_limit := ${5}::integer,
+            p_search := ${options.search}::TEXT
+        );`
+        return RoleMapper.toResponseOptionsDto(permissions);
     }
 
     async get(paginate:RolePaginateDto): Promise<List<RoleListItemDto>> {
