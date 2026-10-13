@@ -32,13 +32,13 @@ CREATE OR REPLACE FUNCTION fc_ListOptionsRoles(
 )
 RETURNS TABLE (
     id          INTEGER,
-    name        VARCHAR(100),    
+    name        VARCHAR(100)  
 )
 LANGUAGE sql
 AS $$
     SELECT
         R.id,                   
-        R.name,
+        R.name
     FROM role AS R
     WHERE
         R.deleted_at IS NULL
