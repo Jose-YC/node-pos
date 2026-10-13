@@ -1,6 +1,7 @@
 import { prisma } from '../../../config';
-import { List, CustomError } from '../../../shared';
+import { List, CustomError, OptionsDto } from '../../../shared';
 import { CreatePermissionRequestDto, PermissionResponseDto, UpdatePermissionRequestDto } from '../dto';
+import { PermissionOptionsDto } from '../dto/request/permision.option';
 import { PermissionPaginateDto } from '../dto/response/permission.paginate';
 import { PermissionRaw } from '../interface/permission.interface';
 import { PermissionMapper } from '../mapper/permission.mapper';
@@ -13,6 +14,14 @@ export class PermissionDatasource {
 
         const permission = await prisma.permission.create({data: createPermission!});
         return !!permission;
+    }
+
+    async options(options: PermissionOptionsDto): Promise<OptionsDto[]> {
+        const permissions = await prisma.$queryRaw<PermissionRaw[]>`SELECT * FROM fc_ListOptionsPermissions(
+            lim := ${5}::integer,
+            search := ${options.search}::TEXT
+        );`
+        return PermissionMapper.toResponseOptionsDto(permissions);
     }
     
     async get(paginate:PermissionPaginateDto): Promise<List<PermissionResponseDto>> {
