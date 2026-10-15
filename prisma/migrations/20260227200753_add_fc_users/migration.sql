@@ -45,7 +45,7 @@ AS $$
         p_search IS NULL 
         OR U.name ILIKE '%' || p_search || '%'
         OR U.email ILIKE '%' || p_search || '%' 
-    )
+    );
 $$;
 
 
@@ -73,7 +73,7 @@ AS $$
         '[]'::JSONB
       )	AS roles
 	FROM "user" u
-	LEFT JOIN user_role ur ON u.id = ur.user_id
+	LEFT JOIN user_role ur ON u.id = ur.user_id AND ur.deleted_at IS NULL
 	LEFT JOIN role r ON r.id = ur.role_id
 	WHERE u.id = p_user_id AND u.deleted_at IS NULL
 	GROUP BY u.id, u.name, u.email;
