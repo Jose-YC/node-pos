@@ -15,8 +15,7 @@ AS $$
         R.name,
         COUNT(RP.permission_id) AS permissions
     FROM role AS R
-    LEFT JOIN role_permission AS RP
-        ON RP.role_id = R.id AND RP.deleted_at IS NULL
+    LEFT JOIN role_permission AS RP ON RP.role_id = R.id AND RP.deleted_at IS NULL
     WHERE
         R.deleted_at IS NULL
         AND ( p_search IS NULL OR R.name ILIKE '%' || p_search || '%' )
@@ -44,7 +43,7 @@ AS $$
         R.deleted_at IS NULL
         AND ( p_search IS NULL OR R.name ILIKE '%' || p_search || '%' )
     ORDER BY R.name ASC, id ASC
-    LIMIT  p_limit 
+    LIMIT  p_limit;
 $$;
 
 CREATE OR REPLACE FUNCTION fc_CountListRoles(
@@ -57,11 +56,11 @@ AS $$
 	    COUNT(*) AS total
 	FROM role
 	WHERE deleted_at IS NULL
-	AND ( p_search IS NULL OR name ILIKE '%' || p_search || '%' )
+	AND ( p_search IS NULL OR name ILIKE '%' || p_search || '%' );
 $$;
 
 
-CREATE FUNCTION fc_RolById(
+CREATE OR REPLACE FUNCTION fc_RolById(
 	p_rol_id	INTEGER
 )
 RETURNS TABLE (
@@ -82,8 +81,7 @@ AS $$
         '[]'::JSONB
       )
 	FROM role r
-	LEFT JOIN role_permission rp ON r.id = rp.role_id
+	LEFT JOIN role_permission rp ON r.id = rp.role_id AND rp.deleted_at IS NULL
 	LEFT JOIN permission p ON p.id = rp.permission_id
-	WHERE r.id = p_rol_id AND r.deleted_at IS NULL
-	GROUP BY r.id, r.name, r.description;
+	WHERE r.id = p_rol_id AND r.deleted_at IS NULL;
 $$;
