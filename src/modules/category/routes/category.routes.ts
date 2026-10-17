@@ -11,6 +11,7 @@ export class CategoryRoutes {
         const authMiddleware = new AuthMiddleware();
 
         router.get('/', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['categories:read'])], category.get);
+        router.get('/options', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['categories:options'])], category.options);
         router.get('/:id', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['categories:byid'])], category.getId);
         router.post('/create', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['categories:create'])], category.post);
         router.put('/update/:id', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['categories:update'])], category.put);

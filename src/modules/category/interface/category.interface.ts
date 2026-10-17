@@ -3,3 +3,8 @@ export interface CategoryRaw {
   name: string,
   description?: string
 }
+
+export interface CategoryOptionsRaw {
+  id: number,
+  name: string
+}

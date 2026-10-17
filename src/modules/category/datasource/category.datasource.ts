@@ -1,7 +1,8 @@
 import { prisma } from '../../../config';
-import { List, CustomError } from '../../../shared';
+import { List, CustomError, OptionsDto } from '../../../shared';
 import { CreateCategoryRequestDto, CategoryResponseDto, UpdateCategoryRequestDto, CategoryPaginateDto } from '../dto';
-import { CategoryRaw } from '../interface/category.interface'
+import { CategoryOptionsDto } from '../dto/request/category.option';
+import { CategoryRaw, CategoryOptionsRaw } from '../interface/category.interface'
 import { CategoryMapper } from '../mapper/category.mapper';
 
 export class CategoryDatasource {
@@ -34,6 +35,14 @@ export class CategoryDatasource {
             total: count[0].fc_countlistcategorys, 
             items: CategoryMapper.toResponseDtoList(categories)
         };
+    }
+
+    async options(options: CategoryOptionsDto): Promise<OptionsDto[]> {
+        const categories = await prisma.$queryRaw<CategoryOptionsRaw[]>`SELECT * FROM fc_ListOptionsCategory(
+            p_limit := ${5}::integer,
+            p_search := ${options.search}::TEXT
+        );`
+        return CategoryMapper.toResponseOptionsDto(categories);
     }
 
     async getId(id: number): Promise<CategoryResponseDto> {

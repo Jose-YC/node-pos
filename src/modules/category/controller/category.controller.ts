@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
-import { CreateCategoryUsecase, ListCategoryUsecase, ByIdCategoryUsecase, UpdateCategoryUsecase, DeleteCategoryUsecase } from "../usecase";
+import { CreateCategoryUsecase, ListCategoryUsecase, ByIdCategoryUsecase, UpdateCategoryUsecase, DeleteCategoryUsecase, ListOptionsCategoryUsecase } from "../usecase";
 import { CreateCategoryRequestDto, CategoryPaginateDto, UpdateCategoryRequestDto } from "../dto";
 import { catchAsync, CustomError, errorHandler } from "../../../shared";
+import { CategoryOptionsDto } from "../dto/request/category.option";
 
 export class CategoryController { 
 
@@ -22,6 +23,15 @@ export class CategoryController {
         .then((data) => res.status(200).json({ status:true, code: 200, message: 'ok', data }))
         .catch((err) => errorHandler(err, res));
 
+    })
+
+    public options = catchAsync((req:Request, res:Response) =>  {
+        const { search } = req.query;
+        const paginate = CategoryOptionsDto.create( { search });
+
+        new ListOptionsCategoryUsecase().execute(paginate)
+        .then((data) => res.status(200).json({ status:true, code: 200, message: 'ok', data }))
+        .catch((err) => errorHandler(err, res));
     })
 
     public getId = catchAsync((req:Request, res:Response) =>  {

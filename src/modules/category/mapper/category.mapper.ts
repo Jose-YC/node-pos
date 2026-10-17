@@ -1,16 +1,24 @@
+import { OptionsDto } from "../../../shared";
 import { CategoryResponseDto } from "../dto";
-import { CategoryRaw } from "../interface/category.interface";
+import { CategoryOptionsRaw, CategoryRaw } from "../interface/category.interface";
 
 export class CategoryMapper {
-    static toResponseDto(Category: CategoryRaw): CategoryResponseDto {
+    static toResponseDto(category: CategoryRaw): CategoryResponseDto {
       return {
-        id: Category.id,
-        name: Category.name.trim(),
-        description: Category.description?.trim(),
+        id: category.id,
+        name: category.name.trim(),
+        description: category.description?.trim(),
       };
     }
 
-    static toResponseDtoList(Categorys: CategoryRaw[]): CategoryResponseDto[] {
-        return Categorys.map(Category => this.toResponseDto(Category));
+    static toResponseOptionsDto(categories: CategoryOptionsRaw[]): OptionsDto[] {
+        return categories.map(category => ({
+            id: category.id,
+            label: category.name,
+        }));
+    }
+
+    static toResponseDtoList(categories: CategoryRaw[]): CategoryResponseDto[] {
+        return categories.map(category => this.toResponseDto(category));
     }
 }
