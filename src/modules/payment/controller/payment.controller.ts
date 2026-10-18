@@ -15,8 +15,8 @@ export class PaymentController {
     })
 
     public get = catchAsync((req:Request, res:Response) =>  {
-        const {  page = 1, lim = 5, search } = req.query;
-        const paginate = PaymentPaginateDto.create( {page: +page, lim: +lim, search});
+        const {  page = 1, limit = 5, search } = req.query;
+        const paginate = PaymentPaginateDto.create( {page: +page, limit: +limit, search});
 
         new ListPaymentUsecase().execute(paginate)
         .then((data) => res.status(200).json({ status:true, code: 200, message: 'ok', data }))
