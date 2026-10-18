@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { PAYMENT_TYPE } from '../interface/payment.interface';
-import { BasePaginateSchema } from '../../../shared';
+import { BasePaginateSchema, BaseOptionsSchema } from '../../../shared';
 
 export const CreatePaymentSchema = z.object({
     name: z.string({error: "must be a string"}).trim().min(1, 'cannot be empty'),
@@ -13,7 +13,9 @@ export const UpdatePaymentSchema = z.object({
 })
 
 export const PaginatePaymentSchema = BasePaginateSchema;
+export const OptionsPaymentSchema = BaseOptionsSchema;
 
 export type PaginatePaymentInput = z.infer<typeof PaginatePaymentSchema>;
+export type OptionsPaymentInput = z.infer<typeof OptionsPaymentSchema>;
 export type CreatePaymentInput = z.infer<typeof CreatePaymentSchema>;
 export type UpdatePaymentInput = z.infer<typeof UpdatePaymentSchema>;

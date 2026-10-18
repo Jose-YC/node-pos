@@ -11,6 +11,7 @@ export class PaymentRoutes {
         const authMiddleware = new AuthMiddleware();
 
         router.get('/', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['payments:read'])], payment.get);
+        router.get('/options', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['payments:options'])], payment.options);
         router.get('/:id', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['payments:byid'])], payment.getId);
         router.post('/create', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['payments:create'])], payment.post);
         router.patch('/update/:id', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['payments:update'])], payment.put);

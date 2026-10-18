@@ -1,6 +1,7 @@
 import { prisma } from '../../../config';
-import { List, CustomError } from '../../../shared';
+import { List, CustomError, OptionsDto } from '../../../shared';
 import { CreatePaymentRequestDto, PaymentResponseDto, UpdatePaymentRequestDto, PaymentPaginateDto } from '../dto';
+import { PaymentOptionsDto } from '../dto/request/payment.option';
 import { PaymentRaw, PaymentType } from '../interface/payment.interface'
 import { PaymentMapper } from '../mapper/payment.mapper';
 
@@ -32,6 +33,15 @@ export class PaymentDatasource {
             total: count[0].fc_countlistpayments, 
             items: PaymentMapper.toResponseDtoList(payments)
         };
+    }
+
+    async options(options: PaymentOptionsDto): Promise<OptionsDto[]> {
+        const payments = await prisma.$queryRaw<PaymentRaw[]>`SELECT * FROM fc_ListOptionsPayments(
+            lim := ${5}::integer,
+            search := ${options.search}::TEXT
+        );`
+        
+        return PaymentMapper.toResponseOptionsDto(payments);
     }
 
     async getId(id: number): Promise<PaymentResponseDto> {

@@ -5,5 +5,10 @@ export interface PaymentRaw {
   status: boolean,
 };
 
+export interface PaymentOptionsRaw {
+  id: number,
+  name: string,
+};
+
 export const PAYMENT_TYPE = ['cash', 'bank', 'digital_wallet'] as const;
 export type PaymentType = typeof PAYMENT_TYPE[number];

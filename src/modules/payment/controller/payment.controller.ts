@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
-import { CreatePaymentUsecase, ListPaymentUsecase, ByIdPaymentUsecase, UpdatePaymentUsecase, DeletePaymentUsecase, StatusPaymentUsecase } from "../usecase";
+import { CreatePaymentUsecase, ListPaymentUsecase, ByIdPaymentUsecase, UpdatePaymentUsecase, DeletePaymentUsecase, StatusPaymentUsecase, ListOptionsPaymentUsecase } from "../usecase";
 import { CreatePaymentRequestDto, PaymentPaginateDto, UpdatePaymentRequestDto } from "../dto";
 import { catchAsync, CustomError, errorHandler } from "../../../shared";
+import { PaymentOptionsDto } from "../dto/request/payment.option";
 
 export class PaymentController { 
 
@@ -22,6 +23,15 @@ export class PaymentController {
         .then((data) => res.status(200).json({ status:true, code: 200, message: 'ok', data }))
         .catch((err) => errorHandler(err, res));
 
+    })
+
+    public options = catchAsync((req:Request, res:Response) =>  {
+        const { search } = req.query;
+        const paginate = PaymentOptionsDto.create( { search });
+
+        new ListOptionsPaymentUsecase().execute(paginate)
+        .then((data) => res.status(200).json({ status:true, code: 200, message: 'ok', data }))
+        .catch((err) => errorHandler(err, res));
     })
 
     public getId = catchAsync((req:Request, res:Response) =>  {
