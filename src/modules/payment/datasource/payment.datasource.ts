@@ -1,7 +1,7 @@
 import { prisma } from '../../../config';
 import { List, CustomError } from '../../../shared';
 import { CreatePaymentRequestDto, PaymentResponseDto, UpdatePaymentRequestDto, PaymentPaginateDto } from '../dto';
-import { PaymentRaw } from '../interface/payment.interface'
+import { PaymentRaw, PaymentType } from '../interface/payment.interface'
 import { PaymentMapper } from '../mapper/payment.mapper';
 
 export class PaymentDatasource {
@@ -52,7 +52,7 @@ export class PaymentDatasource {
         return PaymentMapper.toResponseDto({
             id: payment.id, 
             name: payment.name, 
-            type: payment.type,
+            type: payment.type as PaymentType,
             status: payment.status
         });
     }
