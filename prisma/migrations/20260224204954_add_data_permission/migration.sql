@@ -58,6 +58,7 @@ VALUES
     ('payments:create', 'Crear metodo de pago', 'payments', NOW()),
     ('payments:read', 'Leer metodo de pago', 'payments', NOW()),
     ('payments:options', 'Mostrar metodos de pago para seleccionar', 'payments', NOW()),
+    ('payments:status', 'Cambiar estado de un metodo de pago', 'payments', NOW()),
     ('payments:byid', 'Leer metodo de pago por ID', 'payments', NOW()),
     ('payments:update', 'Actualizar metodo de pago', 'payments', NOW()),
     ('payments:delete', 'Eliminar metodo de pago', 'payments', NOW()),
