@@ -37,10 +37,10 @@ export class PaymentDatasource {
 
     async options(options: PaymentOptionsDto): Promise<OptionsDto[]> {
         const payments = await prisma.$queryRaw<PaymentRaw[]>`SELECT * FROM fc_ListOptionsPayments(
-            lim := ${5}::integer,
-            search := ${options.search}::TEXT
+            p_limit := ${5}::integer,
+            p_search := ${options.search}::TEXT
         );`
-        
+
         return PaymentMapper.toResponseOptionsDto(payments);
     }
 
