@@ -12,7 +12,7 @@ LANGUAGE sql
 AS $$
     SELECT
         R.id,                   
-        R.name
+        R.name,
         COUNT(RP.permission_id) AS permissions
     FROM role AS R
     LEFT JOIN role_permission AS RP ON RP.role_id = R.id AND RP.deleted_at IS NULL
@@ -80,8 +80,9 @@ AS $$
           FILTER (WHERE p.id IS NOT NULL),
         '[]'::JSONB
       )
-	FROM role r
+	FROM role as r
 	LEFT JOIN role_permission rp ON r.id = rp.role_id AND rp.deleted_at IS NULL
 	LEFT JOIN permission p ON p.id = rp.permission_id
-	WHERE r.id = p_rol_id AND r.deleted_at IS NULL;
+	WHERE r.id = p_rol_id AND r.deleted_at IS NULL
+    GROUP BY r.id, r.name, r.description;
 $$;
