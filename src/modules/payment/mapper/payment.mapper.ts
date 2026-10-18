@@ -2,16 +2,16 @@ import { PaymentResponseDto } from "../dto";
 import { PaymentRaw, PaymentType } from "../interface/payment.interface";
 
 export class PaymentMapper {
-    static toResponseDto(Payment: PaymentRaw): PaymentResponseDto {
+    static toResponseDto(payment: PaymentRaw): PaymentResponseDto {
       return {
-        id: Payment.id,
-        name: Payment.name.trim(),
-        type: Payment.type as PaymentType,
-        status: Payment.status
+        id: payment.id,
+        name: payment.name.trim(),
+        type: payment.type as PaymentType,
+        status: payment.status
       };
     }
 
-    static toResponseDtoList(Payments: PaymentRaw[]): PaymentResponseDto[] {
-        return Payments.map(Payment => this.toResponseDto(Payment));
+    static toResponseDtoList(payments: PaymentRaw[]): PaymentResponseDto[] {
+        return payments.map(payment => this.toResponseDto(payment));
     }
 }
