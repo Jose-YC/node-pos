@@ -12,7 +12,7 @@ LANGUAGE sql
 AS $$
     SELECT
         R.id,                   
-        R.name,
+        R.name
         COUNT(RP.permission_id) AS permissions
     FROM role AS R
     LEFT JOIN role_permission AS RP ON RP.role_id = R.id AND RP.deleted_at IS NULL
