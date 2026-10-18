@@ -9,7 +9,7 @@ export class PaymentController {
         const create = CreatePaymentRequestDto.create(req.body);
 
         new CreatePaymentUsecase().execute(create)
-        .then((status) => res.status(201).json({ status, code: 201, message: 'ok' }))
+        .then((data) => res.status(200).json({ status:true, code: 200, message: 'ok', data }))
         .catch((err) => errorHandler(err, res));
 
     })
@@ -38,7 +38,7 @@ export class PaymentController {
         const update = UpdatePaymentRequestDto.create({...req.body, id: +id});
 
         new UpdatePaymentUsecase().execute(update)
-        .then((status) => res.status(200).json({ status, code: 200, message: 'ok' }))
+        .then((data) => res.status(200).json({ status:true, code: 200, message: 'ok', data }))
         .catch((err) => errorHandler(err, res));
 
     })
@@ -48,7 +48,7 @@ export class PaymentController {
         if (!id) throw CustomError.badRequest('Missing id');
 
         new StatusPaymentUsecase().execute(+id)
-        .then((status) => res.status(200).json({ status, code: 200, message: 'ok' }))
+        .then((data) => res.status(200).json({ status:true, code: 200, message: 'ok', data }))
         .catch((err) => errorHandler(err, res));
 
     })
@@ -58,7 +58,7 @@ export class PaymentController {
         if (!id) throw CustomError.badRequest('Missing id');
 
         new DeletePaymentUsecase().execute(+id)
-        .then((status) => res.status(200).json({ status, code: 200, message: 'ok' }))
+        .then((data) => res.status(200).json({ status:true, code: 200, message: 'ok', data }))
         .catch((err) => errorHandler(err, res));
 
     })
