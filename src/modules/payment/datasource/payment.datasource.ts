@@ -8,7 +8,7 @@ import { PaymentMapper } from '../mapper/payment.mapper';
 export class PaymentDatasource {
 
     async create(createPayment: CreatePaymentRequestDto): Promise<boolean> {
-        const existingPayment = await prisma.payment.findFirst({where: { type: createPayment.type }});
+        const existingPayment = await prisma.payment.findFirst({where: { name: createPayment.name }});
         if (existingPayment) throw CustomError.badRequest('A payment with this name already exists');
 
         const payment = await prisma.payment.create({data: createPayment!});
@@ -70,7 +70,7 @@ export class PaymentDatasource {
     async update(updatePayment: UpdatePaymentRequestDto): Promise<boolean> {
         await this.getId(updatePayment.id);
 
-        const update = await prisma.category.update({where: {id: updatePayment.id, deleted_at:null}, data: updatePayment!.values});
+        const update = await prisma.payment.update({where: {id: updatePayment.id, deleted_at:null}, data: updatePayment!.values});
         return !!update;
     }
 
@@ -82,7 +82,7 @@ export class PaymentDatasource {
     
     async delete(id: number): Promise<boolean> {
         await this.getId(id);
-        const payment = await prisma.category.update({where: { id, deleted_at:null }, data: {deleted_at: new Date()}});
+        const payment = await prisma.payment.update({where: { id, deleted_at:null }, data: {deleted_at: new Date()}});
         return !!payment;
     }
 }
