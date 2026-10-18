@@ -72,7 +72,7 @@ WHERE r.name = 'Cajero'
     'box-open:create', 'box-closed:create', 'box-closed:byid',
     'customers:create', 'customers:read', 'customers:byid',
     'products:read', 'products:read-catalog', 'products:byid',
-    'payments:read',
+    'payments:read', 'payments:options',
     'type-document-sale:read', 'type-document-sale:read-status',
     'identity-document-type:read'
   )
@@ -374,7 +374,7 @@ BEGIN
       IF v_pay_type = 0 THEN
         SELECT id, name INTO v_payment_id, v_payment_name FROM "payment" WHERE type = 'cash' AND deleted_at IS NULL LIMIT 1;
       ELSIF v_pay_type = 1 THEN
-        SELECT id, name INTO v_payment_id, v_payment_name FROM "payment" WHERE type = 'card' AND deleted_at IS NULL LIMIT 1;
+        SELECT id, name INTO v_payment_id, v_payment_name FROM "payment" WHERE type = 'bank' AND deleted_at IS NULL LIMIT 1;
       ELSIF v_pay_type = 2 THEN
         SELECT id, name INTO v_payment_id, v_payment_name FROM "payment" WHERE type = 'digital_wallet' AND name = 'Yape' AND deleted_at IS NULL LIMIT 1;
       ELSE
