@@ -10,6 +10,7 @@ CREATE TABLE "type_document_sale" (
     "id" VARCHAR(2) NOT NULL,
     "code" VARCHAR(2) NOT NULL,
     "name" TEXT NOT NULL,
+    "short_name" TEXT NOT NULL,
     "status" BOOLEAN NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,

@@ -412,6 +412,7 @@ model type_document_sale {
   id                  String  @id @db.VarChar(2) 
   code                String  @db.VarChar(2) 
   name                String
+  short_name          String
   status              Boolean
   
   created_at          DateTime  @default(now())
@@ -546,3 +547,4 @@ model detail_stock_adjustment {
   updated_at          DateTime  @updatedAt
   deleted_at          DateTime?
 }
+  
