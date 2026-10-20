@@ -73,7 +73,7 @@ WHERE r.name = 'Cajero'
     'customers:create', 'customers:read', 'customers:byid',
     'products:read', 'products:read-catalog', 'products:byid',
     'payments:read', 'payments:options', 'type-document-sale:options',
-    'identity-document-type:read'
+    'identity-document-type:options'
   )
 ON CONFLICT (role_id, permission_id) DO NOTHING;
 

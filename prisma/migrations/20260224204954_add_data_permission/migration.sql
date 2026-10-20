@@ -7,6 +7,8 @@ VALUES
 
     -- Identity Document Type
     ('identity-document-type:read', 'Leer los tipos de documentos de identidad personal', 'Identity Document Type', NOW()),
+    ('identity-document-type:options', 'Leer los tipos de documentos de identidad personal activos', 'Identity Document Type', NOW()),
+    ('identity-document-type:update-status', 'Actualizar el estado del tipo de documento de identidad personal', 'Identity Document Type', NOW()),
 
     -- Users
     ('users:create', 'Crear usuarios', 'users', NOW()),
