@@ -1,6 +1,8 @@
-import { TypeDocumentSaleResponseDto, TypeDocumentSaleStatusResponseDto } from "../dto";
+import { TypeDocumentSaleResponseDto, TypeDocumentSalePaginateDto } from "../dto";
 import { prisma } from "../../../config";
-import { CustomError } from "../../../shared";
+import { CustomError, List, OptionsDto } from "../../../shared";
+import { TypeDocumentSaleOptionsRaw, TypeDocumentSaleRaw } from "../interface/type-document-sale.interface";
+import { TypeDocumentSaleMapper } from "../mapper/type-document-sale.mapper";
 
 export class TypeDocumentSaleDatasource {
     async status(id:string): Promise<boolean> {
@@ -27,45 +29,29 @@ export class TypeDocumentSaleDatasource {
         return !!update
     }
 
-    async getAll(): Promise<TypeDocumentSaleResponseDto[]> {
-        const documents = await prisma.type_document_sale.findMany({
-            select:{
-                id: true,
-                name: true
-            },
-            where: {
-                deleted_at: null,
-                status: true
-            },
-            orderBy: {
-                created_at: "desc",
-            },
-        });
+    async get(paginate: TypeDocumentSalePaginateDto): Promise<List<TypeDocumentSaleResponseDto>> {
+        const [count, documents] = await Promise.all([
+            prisma.$queryRaw<{ fc_countlistytypedocumentsales: number }[]>`
+                SELECT * FROM fc_CountListTypeDocumentSales(
+                p_search := ${paginate.search}::TEXT
+            );`,
 
-        return documents.map(
-            (document) =>
-            new TypeDocumentSaleResponseDto(document.id, document.name)
-        );
+            prisma.$queryRaw<TypeDocumentSaleRaw[]>`SELECT * FROM fc_ListTypeDocumentSales(
+                p_page := ${paginate.page}::integer,
+                p_limit := ${paginate.limit}::integer,
+                p_search := ${paginate.search}::TEXT
+            );`
+        ]);
+
+         return { 
+            total: count[0].fc_countlistytypedocumentsales, 
+            items: TypeDocumentSaleMapper.toResponseDtoList(documents)
+        };
     }
 
-    async getStatus(): Promise<TypeDocumentSaleStatusResponseDto[]> {
-        const documents = await prisma.type_document_sale.findMany({
-            select:{
-                id: true,
-                name: true,
-                status: true
-            },
-            where: {
-                deleted_at: null
-            },
-            orderBy: {
-                created_at: "desc",
-            },
-        });
-
-        return documents.map(
-            (document) =>
-            new TypeDocumentSaleStatusResponseDto(document.id, document.name, document.status)
-        );
-    }
+    async options(): Promise<OptionsDto[]> {
+        const documents = await prisma.$queryRaw<TypeDocumentSaleOptionsRaw[]>`SELECT * FROM fc_ListOptionsTypeDocumentSales();`
+        return TypeDocumentSaleMapper.toResponseOptionsDto(documents);
+    }   
+    
 }

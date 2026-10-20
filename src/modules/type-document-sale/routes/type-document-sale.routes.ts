@@ -10,8 +10,8 @@ export class TypeDocumentSaleRoutes {
         const document = new TypeDocumentSaleController();
         const authMiddleware = new AuthMiddleware();
 
-        router.get('/', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['type-document-sale:read'])], document.getAll);
-        router.get('/status', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['type-document-sale:read-status'])], document.getStatus);
+        router.get('/', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['type-document-sale:read'])], document.get);
+        router.get('/options', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['type-document-sale:options'])], document.options);
         router.patch('/update/:id', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['type-document-sale:update-status'])], document.status);
 
         return router;

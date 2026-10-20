@@ -1,2 +1,2 @@
-export * from './response/type-document-sale.list-status';
+export * from './request/type-document-sale.paginate';
 export * from './response/type-document-sale.list';
