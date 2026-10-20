@@ -1,9 +1,10 @@
+import { List } from "../../../shared";
 import { IdentityDocumentTypeDatasource } from "../datasource/identity-document-type.datasource";
-import { IdentityDocumentTypeResponseDto } from "../dto/response/identity-document-type.list";
+import { IdentityDocumentTypePaginateDto, IdentityDocumentTypeResponseDto } from "../dto";
 
 export class ListIdentityDocumentTypeUsecase {
 
-    public async execute(): Promise<IdentityDocumentTypeResponseDto[]> {
-        return await new IdentityDocumentTypeDatasource().get();
+    public async execute(paginate: IdentityDocumentTypePaginateDto): Promise<List<IdentityDocumentTypeResponseDto>> {
+        return await new IdentityDocumentTypeDatasource().get(paginate);
     }
 }

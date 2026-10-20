@@ -11,7 +11,9 @@ export class IdentityDocumentTypeRoutes {
         const authMiddleware = new AuthMiddleware();
 
         router.get('/', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['identity-document-type:read'])], identity.get);
-
+        router.get('/options', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['identity-document-type:options'])], identity.options);
+        router.patch('/update/:id', [authMiddleware.validateJWT, authMiddleware.validatePermissions(['identity-document-type:update-status'])], identity.status);
+        
         return router;
     }
 }
