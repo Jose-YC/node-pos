@@ -72,8 +72,7 @@ WHERE r.name = 'Cajero'
     'box-open:create', 'box-closed:create', 'box-closed:byid',
     'customers:create', 'customers:read', 'customers:byid',
     'products:read', 'products:read-catalog', 'products:byid',
-    'payments:read', 'payments:options',
-    'type-document-sale:read', 'type-document-sale:read-status',
+    'payments:read', 'payments:options', 'type-document-sale:options',
     'identity-document-type:read'
   )
 ON CONFLICT (role_id, permission_id) DO NOTHING;

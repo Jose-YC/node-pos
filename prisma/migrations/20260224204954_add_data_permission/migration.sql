@@ -2,7 +2,7 @@ INSERT INTO permission (name, description, module, updated_at)
 VALUES
     -- Type Document Sale
     ('type-document-sale:read', 'Leer tipo de documento de venta', 'Type Document Sale', NOW()),
-    ('type-document-sale:read-status', 'Leer tipo de documento de venta activos', 'Type Document Sale', NOW()),
+    ('type-document-sale:options', 'Leer tipo de documento de venta activos', 'Type Document Sale', NOW()),
     ('type-document-sale:update-status', 'Actualizar el estado del tipo de documento de venta', 'Type Document Sale', NOW()),
 
     -- Identity Document Type
