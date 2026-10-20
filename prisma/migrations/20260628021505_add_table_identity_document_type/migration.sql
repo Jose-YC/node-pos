@@ -4,6 +4,7 @@ CREATE TABLE "identity_document_type" (
     "code" VARCHAR(2) NOT NULL,
     "name" VARCHAR(100) NOT NULL,
     "short_name" VARCHAR(30),
+    "status" BOOLEAN NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "deleted_at" TIMESTAMP(3),

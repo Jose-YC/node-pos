@@ -105,6 +105,7 @@ model identity_document_type {
   code        String   @unique @db.VarChar(2) // igual al id (código SUNAT)
   name        String   @db.VarChar(100)       // "DOC. NACIONAL DE IDENTIDAD"
   short_name  String?  @db.VarChar(30)        // "DNI"
+  status      Boolean
 
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
