@@ -31,7 +31,7 @@ export class TypeDocumentSaleDatasource {
 
     async get(paginate: TypeDocumentSalePaginateDto): Promise<List<TypeDocumentSaleResponseDto>> {
         const [count, documents] = await Promise.all([
-            prisma.$queryRaw<{ fc_countlistytypedocumentsales: number }[]>`
+            prisma.$queryRaw<{ fc_countlisttypedocumentsales: number }[]>`
                 SELECT * FROM fc_CountListTypeDocumentSales(
                 p_search := ${paginate.search}::TEXT
             );`,
@@ -42,9 +42,9 @@ export class TypeDocumentSaleDatasource {
                 p_search := ${paginate.search}::TEXT
             );`
         ]);
-
+        
          return { 
-            total: count[0].fc_countlistytypedocumentsales, 
+            total: count[0].fc_countlisttypedocumentsales, 
             items: TypeDocumentSaleMapper.toResponseDtoList(documents)
         };
     }
